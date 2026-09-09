@@ -23,6 +23,24 @@ Features:
 4. **Documentation**: Update relevant documentation to note the model sources and license.
 5. **Attribution**: Although CC0 does not require attribution, we may credit Quaternius in the game's credits or documentation.
 
+
+
+## Manual Download Instructions
+Since the automated download requires a session-specific key from itch.io, please follow these steps to manually obtain the asset:
+
+1. Visit the asset page: https://quaternius.itch.io/medieval-village-megakit
+2. Click "Download Now" and enter a fair price (can be $0 for the free version).
+3. After the download starts, save the ZIP file to your local machine.
+4. Extract the ZIP file.
+5. Copy the extracted contents (should be GLB/OBJ/FBX model files and possibly folders) into:
+   `<repo_root>/resources/models/medieval-village-megakit/`
+6. Ensure the directory structure is flat (i.e., the model files are directly in this folder or in clearly labeled subfolders by category if you prefer).
+
+## Verification
+After placing the files, you can verify by checking for common file extensions:
+```bash
+find resources/models/medieval-village-megakit -type f \( -name "*.glb" -o -name "*.gltf" -o -name "*.fbx" -o -name "*.obj" \)
+```
 ## License
 - Creative Commons Zero v1.0 Universal (CC0)
 - Free for personal, educational, and commercial projects.

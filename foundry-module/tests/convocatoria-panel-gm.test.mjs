@@ -85,7 +85,14 @@ function setupMocks() {
     },
     user: { isGM: true },
     settings: {
-      register: () => {} // mock implementation
+      register: () => {}, // mock implementation
+      // La convocatoria se publica ESCRIBIENDO un ajuste de mundo (#832): sin
+      // `set` en el doble, el camino de éxito acaba en el `catch` y el test
+      // vería la advertencia de fallo.
+      set: (moduleId, clave, valor) => {
+        globalThis.ultimaConvocatoriaPublicada = { moduleId, clave, valor };
+        return Promise.resolve(valor);
+      },
     },
   };
   // Mock ui.notifications
@@ -102,6 +109,7 @@ function setupMocks() {
 // Helper to reset mocks
 function resetMocks() {
   globalThis.lastWarning = undefined;
+  globalThis.ultimaConvocatoriaPublicada = undefined;
   // Delete the mocked globals to avoid leaking to other tests? We'll just overwrite.
   delete globalThis.Hooks;
   delete globalThis.foundry;
@@ -113,26 +121,28 @@ function resetMocks() {
 
 test("manejarConvocatoria con una estancia válida no muestra advertencia (convocar real)", async () => {
   setupMocks();
+  const { registrarConvocatoriaEstancia } = await import("../scripts/convocatoria-difusion.mjs");
+  registrarConvocatoriaEstancia("espaciokoop-lagunak", { abrir: () => {} });
   // Contra el `convocar` REAL (`convocatoria-estancia.mjs`) y el catálogo REAL
   // (`playa`, con entrada despejada, ya lo prueba `convocatoria-estancia.test.mjs`):
-  // no se mockea `import()`. `manejarConvocatoria` no tiene ninguna señal
-  // positiva de éxito (su propio comentario dice que no notifica nada todavía),
-  // así que la señal que se espera es la NEGATIVA acotada: pasado un margen,
-  // no ha aparecido ninguna advertencia.
+  // no se mockea `import()`.
   const mainModule = await import(`../scripts/main.mjs?${Date.now()}`);
-  mainModule.manejarConvocatoria({ idEstancia: "playa", rolConvocante: "GM" });
+  // Ahora SÍ hay señal positiva de éxito: `manejarConvocatoria` devuelve la
+  // promesa de `publicarConvocatoria`, así que se espera el resultado en vez
+  // de un margen de tiempo.
+  const publicado = await mainModule.manejarConvocatoria({ idEstancia: "playa", rolConvocante: "GM" });
 
-  // Margen acotado (no infinito) para que el `import()` + `convocar()` reales
-  // terminen: es una promesa encadenada con `.then()`, no algo que este test
-  // pueda esperar directamente.
-  await new Promise((resolve) => setTimeout(resolve, 200));
   assert.equal(globalThis.lastWarning, undefined, "no se esperaba ninguna advertencia para una estancia válida");
+  assert.equal(publicado?.estancia, "playa", "la convocatoria válida se publica");
+  assert.equal(globalThis.ultimaConvocatoriaPublicada?.clave, "convocatoria-estancia", "se escribe el ajuste de mundo");
 
   resetMocks();
 });
 
 test("manejarConvocatoria muestra una advertencia si la estancia no existe (convocar real)", async () => {
   setupMocks();
+  const { registrarConvocatoriaEstancia } = await import("../scripts/convocatoria-difusion.mjs");
+  registrarConvocatoriaEstancia("espaciokoop-lagunak", { abrir: () => {} });
   // "no-existe" hace que el `convocar` REAL devuelva `null` por la vía más
   // simple (catalogo.tiene(id) === false) — no hace falta mockear nada.
   const mainModule = await import(`../scripts/main.mjs?${Date.now()}`);
@@ -149,6 +159,8 @@ test("manejarConvocatoria muestra una advertencia si la estancia no existe (conv
 
 test("abrirConvocatoria crea la aplicación y la renderiza", async () => {
   setupMocks();
+  const { registrarConvocatoriaEstancia } = await import("../scripts/convocatoria-difusion.mjs");
+  registrarConvocatoriaEstancia("espaciokoop-lagunak", { abrir: () => {} });
   const mainModule = await import(`../scripts/main.mjs?${Date.now()}`);
   // No debe lanzar: abrirConvocatoria no llama a manejarConvocatoria, así que
   // no hace falta esperar a ningún import dinámico aquí.

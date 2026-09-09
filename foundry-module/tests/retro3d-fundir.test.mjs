@@ -199,7 +199,13 @@ test("fixture end-to-end: `ordenarPorPintorNewell` regresiona sobre la escena re
     };
   });
 
-  const REGRESION_MEDIDA = [0, 6, 6, 7];
+  // Recaptura de #584: subdividir el paño texturado del muro en cuadros de
+  // ~1,5 m parte caras grandes en varias pequeñas, y una cara pequeña está
+  // «enteramente detrás» de otra muchas menos veces. Bajó de [0, 6, 6, 7] a
+  // los de abajo. Es la misma regresión documentada, medida sobre otra
+  // geometría — no se ha tocado `ordenarPorPintorNewell` — y sigue existiendo
+  // en el cuarto ángulo, que es lo que comprueba la aserción siguiente.
+  const REGRESION_MEDIDA = [0, 0, 0, 4];
   assert.deepEqual(
     medido.map((m) => m.newell),
     REGRESION_MEDIDA,

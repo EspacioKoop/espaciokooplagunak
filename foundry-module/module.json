@@ -16,6 +16,7 @@
   },
   "esmodules": [
     "scripts/main.mjs",
+    "scripts/parlamento-selector-app.mjs",
     "scripts/visor-3d-sistema-app.mjs"
   ],
   "styles": [

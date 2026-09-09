@@ -13,11 +13,11 @@ function manejadores() {
   };
 }
 
-test("devuelve las tres herramientas solo-GM, en orden, con name/title/icon/button", () => {
+test("devuelve las cuatro herramientas solo-GM, en orden, con name/title/icon/button", () => {
   const herramientas = construirHerramientasGM(manejadores());
   assert.deepEqual(
     herramientas.map((h) => h.name),
-    ["lagunak-panel-gm", "lagunak-playa", "lagunak-museo"],
+    ["lagunak-panel-gm", "lagunak-playa", "lagunak-museo", "lagunak-estudio"],
   );
   for (const h of herramientas) {
     assert.equal(typeof h.title, "string");
@@ -34,11 +34,15 @@ test("lagunak-panel-gm llama a abrirPanelGM()", () => {
   assert.deepEqual(m.llamadas, [["panel-gm"]]);
 });
 
-test("lagunak-playa llama a abrirAndarNave con su estancia", () => {
+test("lagunak-playa y lagunak-estudio llaman a abrirAndarNave con su estancia", () => {
   const m = manejadores();
   const herramientas = construirHerramientasGM(m);
   herramientas.find((h) => h.name === "lagunak-playa").onClick();
-  assert.deepEqual(m.llamadas, [["andar-nave", "playa"]]);
+  herramientas.find((h) => h.name === "lagunak-estudio").onClick();
+  assert.deepEqual(m.llamadas, [
+    ["andar-nave", "playa"],
+    ["andar-nave", "estudio"],
+  ]);
 });
 
 test("lagunak-museo convoca a la mesa en vez de abrir solo", () => {

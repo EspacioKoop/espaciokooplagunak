@@ -1,7 +1,7 @@
 # Sistemas de RPG abiertos, licencias y repositorios CC0 para integración standalone
 
-> **Issue:** [#886](https://github.com/EspacioKoop/espaciokooplagunak/issues/886)  
-> **Objetivo:** Investigar ocho sistemas, licencias y repositorios de RPG abiertos/CC0, con foco en si aportan reglas, contenido o contratos aprovechables para el objetivo **standalone** de Espaciokoop Lagunak, sin heredar dependencias de ejecución de Foundry VTT.  
+> **Issue:** [#886](https://github.com/EspacioKoop/espaciokooplagunak/issues/886)
+> **Objetivo:** Investigar ocho sistemas, licencias y repositorios de RPG abiertos/CC0, con foco en si aportan reglas, contenido o contratos aprovechables para el objetivo **standalone** de Espaciokoop Lagunak, sin heredar dependencias de ejecución de Foundry VTT.
 > **Marco arquitectónico y legal:** Licencia de este repo: **GPL-2.0** ([`LICENSE`](../LICENSE)), principio **ADR-0008** ([`docs/adr/0008-standalone-first-autoridad-del-nucleo.md`](adr/0008-standalone-first-autoridad-del-nucleo.md)), política de contenido externo ([`docs/CONTENIDO_EXTERNO.md`](CONTENIDO_EXTERNO.md)) y verificación técnica de fuentes ([`docs/FUENTES_EXTERNAS.md`](FUENTES_EXTERNAS.md)).
 > **Entrega parcial — Refs #886, no cierre.** No se incorpora código, contenido jugable ni assets de ninguno de los ocho recursos; solo análisis, enlaces y citas breves de licencia. La licencia de RPGnet sigue sin verificar: no se satisface todavía el criterio de ocho licencias verificadas. Consulta documental: 2026-09-09.
 >

@@ -2,6 +2,18 @@
   "schemaVersion": 1,
   "declarations": [
     {
+      "module": "catalogo-tokens.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Contrato de tokens 2D del pipeline #891-A/B, consumido por tools/convertir-token.mjs y tools/asset-credits-gen.mjs, no por el módulo en caliente. El primer lote de imágenes con licencia verificada y su consumidor corresponden a #891-C: conectar un catálogo vacío aquí no entregaría los tokens ni fondos pendientes.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/891"
+      }
+    },
+    {
       "module": "arte/audio/audio-ficheros.mjs",
       "status": "declared-orphan",
       "foundation": true,

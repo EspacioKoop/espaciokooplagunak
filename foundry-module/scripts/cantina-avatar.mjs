@@ -19,8 +19,11 @@
 //
 // Frontera de arte (#351): no declara ni un color.
 
-import { AVATAR, FACCIONES, RETRATO } from "./paleta.mjs";
+import { AVATAR, FACCIONES, PIXEL, RETRATO } from "./paleta.mjs";
+import { caja } from "./cantina-escena.mjs";
 import { prisma } from "./escena-primitivas.mjs";
+import { ANCLAS, anclasAvatar, dimensionesCuerpo, puntosAvatar } from "./avatar/avatar-rig.mjs";
+import { normalizarPorte, sostener } from "./avatar/avatar-porte.mjs";
 import { mezclar } from "./retro3d.mjs";
 
 /**
@@ -61,7 +64,7 @@ export const RAZAS = Object.freeze(["humano", "enano", "elfo", "mediano", "otra"
  * Cada gesto es una POSTURA, no una animación: cambia dónde están las manos y
  * qué lleva encima, y el bucle de la sala lo pinta como pinta todo lo demás.
  * Animar interpolando entre posturas sería un motor de esqueletos, y esto son
- * seis volúmenes sencillos.
+ * seis cajas.
  */
 export const GESTOS = Object.freeze(["quieto", "saludo", "brindis", "fumar", "hombros", "pensar"]);
 
@@ -82,6 +85,12 @@ const CUERPO_POR_RAZA = Object.freeze({
 
 const SILUETA_ANCHO = Object.freeze({ ancha: 1.18, estrecha: 0.88, neutra: 1 });
 
+/**
+ * El volumen de una pieza del avatar: un prisma de ocho lados en vez de una
+ * caja (#1027). Ancho y fondo se declaran por separado y `prisma` usa un radio
+ * circular, así que se escala en X después — conservar ambos evita que la
+ * dimensión menor aplaste la silueta racial en el render.
+ */
 function volumenAvatar([ancho, alto, fondo], { radioAbajo = 0.46, radioArriba = 0.54 } = {}) {
   const radioX = ancho / 2;
   const radioZ = fondo / 2;
@@ -92,9 +101,6 @@ function volumenAvatar([ancho, alto, fondo], { radioAbajo = 0.46, radioArriba = 
     lados: 8,
     tapaAbajo: true,
   });
-  // `prisma` usa un radio circular. El avatar, en cambio, declara ancho y
-  // fondo por separado: conservar ambos evita que la dimensión menor aplaste
-  // la silueta racial en el render.
   const escalaX = radioZ === 0 ? 1 : radioX / radioZ;
   return {
     ...malla,
@@ -102,6 +108,8 @@ function volumenAvatar([ancho, alto, fondo], { radioAbajo = 0.46, radioArriba = 
   };
 }
 
+/** Una pieza del avatar con su volumen ya montado. `centro` sale del rig
+ *  (`avatar/avatar-rig.mjs`), nunca de una cuenta de proporción escrita aquí. */
 function piezaAvatar(nombre, color, centro, medidas, opciones) {
   return { nombre, color, centro, medidas, malla: volumenAvatar(medidas, opciones) };
 }
@@ -109,10 +117,6 @@ function piezaAvatar(nombre, color, centro, medidas, opciones) {
 /** Alto total del avatar en unidades de sala, antes de la raza. Una persona
  * junto a una barra de 0.75: esto la deja mirando por encima de ella. */
 export const ALTO_BASE = 1.72;
-
-/** Cuánto puede encogerse una pierna, en fracción de su largo de pie. Por
- *  debajo de un cuarto el cuerpo se lee como un torso tirado en el suelo. */
-const MINIMO_PIERNAS = 0.25;
 
 /** Normaliza una descripción venga de donde venga, sin rechazar nada: un avatar
  * mal descrito tiene que aparecer igual, porque no aparecer es peor que
@@ -137,67 +141,113 @@ function indiceValido(valor, cuantos) {
 }
 
 /**
+ * Las medidas de un cuerpo: cuánto mide y cuánto ocupa de ancho, ya resueltas
+ * desde la raza y la silueta.
+ *
+ * Es la frontera con `avatar/avatar-rig.mjs`: aquí se sabe QUIÉN es alguien
+ * —las tablas del SRD, la silueta que ha elegido—, y allí solo se saben
+ * MEDIDAS. Así el rig puede colocar un cuerpo sin conocer ni una raza, y las
+ * dos mitades no se importan la una a la otra.
+ */
+export function medidasDeAvatar(descripcion, pies = [0, 0, 0]) {
+  const av = normalizarAvatar(descripcion);
+  const cuerpo = CUERPO_POR_RAZA[av.raza];
+  return Object.freeze({
+    escala: ALTO_BASE * cuerpo.alto,
+    ancho: cuerpo.ancho * SILUETA_ANCHO[av.silueta],
+    pies,
+  });
+}
+
+/**
  * Las piezas de un avatar, ya colocadas alrededor de `[x, y, z]` (los pies).
  * Devuelve la misma forma que los muebles de la sala —`{nombre, color, centro,
  * medidas}`— para que la escena no distinga a una persona de un taburete y no
  * haga falta ni un pintor nuevo ni una rama en `componerCantina`.
  */
-export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0, flexion = 0 } = {}) {
+export function piezasAvatar(descripcion, { pies = [0, 0, 0], indice = 0, tiempo = 0, yaw = 0, porte = {}, flexion = 0 } = {}) {
   const av = normalizarAvatar(descripcion);
-  const cuerpo = CUERPO_POR_RAZA[av.raza];
-  const escala = ALTO_BASE * cuerpo.alto;
-  const ancho = cuerpo.ancho * SILUETA_ANCHO[av.silueta];
-  const [px, py, pz] = pies;
+  const medidas = medidasDeAvatar(av, pies);
 
   const piel = RETRATO.cascos[av.piel];
   const pelo = AVATAR.pelos[av.pelo];
   const ropa = FACCIONES[av.ropa];
   const prefijo = `avatar${indice}`;
 
-  // Cuatro cabezas de alto, repartidas: piernas, torso y una cabeza enorme.
-  const altoCabeza = escala * 0.26;
-  const altoTorso = escala * 0.36;
-  // `flexion` son los metros que el cuerpo BAJA sin despegar los pies del
-  // suelo: agacharse (#446) y sentarse. Se le quitan a las PIERNAS y a nada
-  // más, y eso no es una simplificación de dibujo sino la cuenta exacta —
-  // torso y cabeza se apoyan encima, así que la cabeza baja justo `flexion` y
-  // acaba donde acaba la cámara de quien está agachado o sentado. Sin esto, el
-  // cuerpo se dibujaba entero desde unos pies HUNDIDOS en el suelo, porque
-  // quien pinta recibía el offset de CÁMARA y lo trataba como altura de los
-  // pies (ver `nave-avatares-render.mjs`).
-  //
-  // El tope existe porque hay cuerpos cortos: un mediano agachado 0,5 m no
-  // tiene medio metro de pierna que encoger. Pasado el tope el cuerpo deja de
-  // seguir a la cámara al centímetro, que es mucho mejor que invertirse.
-  const piernasDePie = escala - altoCabeza - altoTorso;
-  const altoPiernas = Math.max(piernasDePie * MINIMO_PIERNAS, piernasDePie - Math.max(0, flexion));
-
-  const yPiernas = py + altoPiernas / 2;
-  const yTorso = py + altoPiernas + altoTorso / 2;
-  const yCabeza = py + altoPiernas + altoTorso + altoCabeza / 2;
+  // Las medidas del cuerpo y DÓNDE cae cada parte salen del mismo rig
+  // (`avatar/avatar-rig.mjs`): las cajas de abajo y los anclajes de los que
+  // cuelgan el cigarro o la jarra ya no pueden separarse, porque son la misma
+  // jerarquía resuelta una sola vez. El gesto es una POSE parcial sobre ese
+  // rig —dónde llevas las manos—, no una lista de posiciones absolutas.
+  const d = dimensionesCuerpo(medidas, { flexion });
+  const pose = poseDelGesto(av.gesto, d);
+  const p = puntosAvatar(medidas, { pose, yaw, flexion });
+  const anclas = anclasAvatar(medidas, { pose, yaw, flexion });
+  const { ancho, altoCabeza, altoTorso, altoPiernas } = d;
+  const llevado = normalizarPorte(porte);
 
   return [
-    piezaAvatar(`${prefijo}Pierna`, piel, [px, yPiernas, pz], [0.3 * ancho, altoPiernas, 0.26], { radioAbajo: 0.62, radioArriba: 0.46 }),
-    piezaAvatar(`${prefijo}Torso`, ropa, [px, yTorso, pz], [0.46 * ancho, altoTorso, 0.3], { radioAbajo: 0.58, radioArriba: 0.42 }),
-    piezaAvatar(`${prefijo}Cabeza`, piel, [px, yCabeza, pz], [0.38 * ancho, altoCabeza, 0.36], { radioAbajo: 0.5, radioArriba: 0.7 }),
+    piezaAvatar(`${prefijo}Pierna`, piel, p.piernas, [0.3 * ancho, altoPiernas, 0.26], { radioAbajo: 0.62, radioArriba: 0.46 }),
+    piezaAvatar(`${prefijo}Torso`, ropa, p.torso, [0.46 * ancho, altoTorso, 0.3], { radioAbajo: 0.58, radioArriba: 0.42 }),
+    piezaAvatar(`${prefijo}Cabeza`, piel, p.cabeza, [0.38 * ancho, altoCabeza, 0.36], { radioAbajo: 0.5, radioArriba: 0.7 }),
     // El pelo es una tapa, no una peluca: a esta resolución basta para leerse.
-    piezaAvatar(`${prefijo}Pelo`, pelo, [px, yCabeza + altoCabeza * 0.42, pz - 0.02], [0.42 * ancho, altoCabeza * 0.34, 0.4], { radioAbajo: 0.7, radioArriba: 0.45 }),
-    ...rasgoDeRaza(av.raza, { px, pz, yCabeza, altoCabeza, ancho, piel, prefijo }),
+    piezaAvatar(`${prefijo}Pelo`, pelo, sobreCuerpo(p.cabeza, [0, altoCabeza * 0.42, -0.02], yaw),
+      [0.42 * ancho, altoCabeza * 0.34, 0.4], { radioAbajo: 0.7, radioArriba: 0.45 }),
+    ...rasgoDeRaza(av.raza, { p, altoCabeza, ancho, piel, prefijo, yaw }),
     // Manos como guantes, a los lados y grandes: es la firma de aquel estilo y
     // además es lo único que deja ver a distancia qué está haciendo alguien.
     // Por eso el gesto vive en las manos y no en la cara.
-    ...manosDelGesto(av.gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel, prefijo, indice, tiempo }),
+    piezaAvatar(`${prefijo}ManoDer`, piel, p.manoDer, [0.16, 0.16, 0.16], { radioAbajo: 0.75, radioArriba: 0.5 }),
+    piezaAvatar(`${prefijo}ManoIzq`, piel, p.manoIzq, [0.16, 0.16, 0.16], { radioAbajo: 0.75, radioArriba: 0.5 }),
+    // Lo que llevan las manos, colgado de su anclaje y no recalculado aquí.
+    // Lo que se LLEVA va antes que lo que sale del gesto, y gana: llevar algo
+    // es un dato de la persona (#897), no una consecuencia de lo que esté
+    // haciendo. Sin porte declarado no cambia nada, así que la jarra sigue
+    // saliendo con «brindis» y el cigarro con «fumar» exactamente como antes.
+    ...piezasDelPorte(porte, { anclas, prefijo, yaw }),
+    ...atrezoDelGesto(av.gesto, { anclas, altoTorso, prefijo, indice, tiempo, yaw, porte: llevado }),
     // Y lo que lleva encima, que es lo que dice la clase de un vistazo.
-    ...distintivoDeClase(av.clase, { px, py: yTorso, pz, ancho, altoTorso, prefijo }),
-  ].map((pieza) => Object.freeze(pieza));
+    ...distintivoDeClase(av.clase, { anclas, altoTorso, prefijo }),
+  ].map((pieza) => Object.freeze({ ...pieza, giro: yaw }));
 }
 
-/** Dónde queda la punta del cigarro en el mundo, junto a la boca. Un único
- * sitio para esta cuenta: lo usa tanto la brasa (#439) como el humo que sube
- * desde ella, y escribirla dos veces es la forma segura de que un día
- * diverjan. */
-function puntaDelCigarro({ px, pz, yCabeza, ancho }) {
-  return [px + 0.26 * ancho, yCabeza - 0.06, pz + 0.4];
+/**
+ * El gesto, como POSE sobre el rig: dónde llevas las manos respecto a donde te
+ * caerían solas. Lo que no se nombra se queda en reposo, así que «quieto» es la
+ * pose vacía y no una lista de brazos caídos — y añadir un gesto no obliga a
+ * repetir el resto del cuerpo.
+ *
+ * Los desplazamientos son los mismos valores que estaban escritos a mano en
+ * `manosDelGesto`, expresados ahora respecto al reposo en vez de en absoluto:
+ * las manos caen exactamente donde caían, y hay una prueba que lo exige.
+ */
+function poseDelGesto(gesto, { ancho, yTorso, yCabeza, altoTorso, yReposo }) {
+  const der = (dx, y, dz) => ({ manoDer: { desplazamiento: [dx * ancho, y - yReposo, dz] } });
+  switch (gesto) {
+    // Una mano en alto. El saludo es el gesto que más se usa y por eso es el más
+    // claro de leer: mano por encima del hombro y separada del cuerpo.
+    case "saludo":
+      return der(0.12, yCabeza, 0.04);
+    // Brindis: la jarra en alto, hacia delante. Se brinda CON alguien, así que
+    // el brazo va adelantado y no pegado al costado.
+    case "brindis":
+      return der(0.04, yTorso + altoTorso * 0.35, 0.18);
+    // Fumar: la mano junto a la cara y el cigarro asomando.
+    case "fumar":
+      return der(-0.04, yCabeza - 0.12, 0.16);
+    // Hombros: las dos manos abiertas hacia fuera y arriba. «Yo qué sé».
+    case "hombros":
+      return {
+        manoDer: { desplazamiento: [0.16 * ancho, yTorso - yReposo, 0.1] },
+        manoIzq: { desplazamiento: [-0.16 * ancho, yTorso - yReposo, 0.1] },
+      };
+    // Pensar: una mano en la barbilla. En un juego de faroleo es el gesto más
+    // útil de todos, porque dice «me lo estoy pensando» sin decir qué.
+    case "pensar":
+      return der(-0.18, yCabeza - 0.16, 0.2);
+    default:
+      return {};
+  }
 }
 
 /**
@@ -221,37 +271,53 @@ export function intensidadCalada(tiempoMs = 0, offset = 0) {
 }
 
 /**
- * Dónde caen las manos —y qué llevan— según el gesto. Un cigarro es una caja
- * clara junto a la cabeza; una jarra, una caja ámbar en alto. A esta resolución
- * eso basta: no hace falta modelar el humo del cigarro porque la sala ya tiene
- * humo, y quien fuma lo alimenta (ver `ANCLAS_AIRE` en `cantina-escena.mjs`).
+ * Un punto pegado al cuerpo: su base más un desplazamiento que gira CON la
+ * persona. Un cigarro diez centímetros «por detrás de la punta» tiene que
+ * quedarse detrás de la punta también cuando alguien se da la vuelta; sumar el
+ * desplazamiento en ejes de mundo lo dejaría cruzándole la cara.
  */
-function manosDelGesto(gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel, prefijo, indice = 0, tiempo = 0 }) {
-  const mano = (lado, [dx, dy, dz], nombre = "Mano") => ({
-    nombre: `${prefijo}${nombre}${lado}`,
-    color: piel,
-    centro: [px + dx * ancho, dy, pz + dz],
-    medidas: [0.16, 0.16, 0.16],
-    malla: volumenAvatar([0.16, 0.16, 0.16], { radioAbajo: 0.75, radioArriba: 0.5 }),
-  });
-  const reposo = yTorso - altoTorso * 0.2;
+function sobreCuerpo([x, y, z], [dx, dy, dz], yaw = 0) {
+  if (!Number.isFinite(yaw) || yaw === 0) return [x + dx, y + dy, z + dz];
+  const sen = Math.sin(yaw);
+  const cos = Math.cos(yaw);
+  return [x + dx * cos + dz * sen, y + dy, z - dx * sen + dz * cos];
+}
 
+/**
+ * Qué lleva encima el gesto, colgado de un ANCLAJE y no recalculado.
+ *
+ * Cada pieza es su anclaje más un desplazamiento pequeño y declarado: el cigarro
+ * asoma diez centímetros por detrás de su punta, la jarra va un poco por encima
+ * de la mano que la sostiene. Ese desplazamiento es lo único propio del prop;
+ * dónde está la mano o la boca lo sabe el rig, que es el punto de #897 — antes
+ * esta cuenta estaba escrita tres veces y la tercera copia (la del humo) ya
+ * había hecho falta rescatarla en #439.
+ *
+ * A esta resolución no hace falta modelar el humo del cigarro porque la sala ya
+ * tiene humo, y quien fuma lo alimenta (ver `ANCLAS_AIRE` en `cantina-escena.mjs`).
+ */
+/**
+ * Lo que se lleva en cada mano, colgado de su anclaje. Cada mano por separado,
+ * porque son dos anclajes independientes: llevar algo en las dos no es una
+ * función distinta, es llamar dos veces a la misma.
+ */
+function piezasDelPorte(porte, { anclas, prefijo, yaw }) {
+  const llevado = normalizarPorte(porte);
+  return [
+    ...sostener(llevado.manoDerecha, anclas.manoDerecha.punto, { prefijo: `${prefijo}Der`, yaw }),
+    ...sostener(llevado.manoIzquierda, anclas.manoIzquierda.punto, { prefijo: `${prefijo}Izq`, yaw }),
+  ];
+}
+
+function atrezoDelGesto(gesto, { anclas, altoTorso, prefijo, indice = 0, tiempo = 0, yaw = 0, porte = {} }) {
+  const sobre = ({ punto }, desplazamiento) => sobreCuerpo(punto, desplazamiento, yaw);
+  // Una mano ocupada no saca además la jarra del gesto: se brinda CON lo que
+  // se lleve. El cigarro no entra aquí porque cuelga de la boca, no de la mano.
+  if (porte.manoDerecha && gesto === "brindis") return [];
   switch (gesto) {
-    // Una mano en alto. El saludo es el gesto que más se usa y por eso es el más
-    // claro de leer: mano por encima del hombro y separada del cuerpo.
-    case "saludo":
-      return [mano("Izq", [-0.3, reposo, 0.06]), mano("Der", [0.42, yCabeza, 0.1])];
-    // Brindis: la jarra en alto, hacia delante. Se brinda CON alguien, así que
-    // el brazo va adelantado y no pegado al costado.
     case "brindis":
-      return [
-        mano("Izq", [-0.3, reposo, 0.06]),
-        mano("Der", [0.34, yTorso + altoTorso * 0.35, 0.24]),
-        piezaAvatar(`${prefijo}Jarra`, AVATAR.jarra, [px + 0.34 * ancho, yTorso + altoTorso * 0.55, pz + 0.24], [0.18, 0.24, 0.18], { radioAbajo: 0.65, radioArriba: 0.8 }),
-      ];
-    // Fumar: la mano junto a la cara y el cigarro asomando. La brasa es un píxel
-    // y es lo único claro de la silueta, que es exactamente cómo se ve a alguien
-    // fumando en la penumbra.
+      return [piezaAvatar(`${prefijo}Jarra`, AVATAR.jarra, sobre(anclas.manoDerecha, [0, altoTorso * 0.2, 0]),
+        [0.18, 0.24, 0.18], { radioAbajo: 0.65, radioArriba: 0.8 })];
     case "fumar": {
       // La brasa sube de brillo en la calada y se apaga entre una y la
       // siguiente (#439): cada avatar tira en un momento distinto —de ahí el
@@ -259,36 +325,39 @@ function manosDelGesto(gesto, { px, pz, yTorso, altoTorso, yCabeza, ancho, piel,
       // se lee como un parpadeo de escenario, no como gente fumando.
       const calada = intensidadCalada(tiempo, indice);
       return [
-        mano("Izq", [-0.3, reposo, 0.06]),
-        mano("Der", [0.26, yCabeza - 0.12, 0.22]),
-        piezaAvatar(`${prefijo}Cigarro`, AVATAR.cigarro, [px + 0.26 * ancho, yCabeza - 0.06, pz + 0.3], [0.05, 0.05, 0.18], { radioAbajo: 0.8, radioArriba: 0.55 }),
-        piezaAvatar(`${prefijo}Brasa`, mezclar(AVATAR.brasa, AVATAR.brasaCalada, calada), puntaDelCigarro({ px, pz, yCabeza, ancho }), [0.06, 0.06, 0.06], { radioAbajo: 0.8, radioArriba: 0.45 }),
+        piezaAvatar(`${prefijo}Cigarro`, AVATAR.cigarro, sobre(anclas.boca, [0, 0, -0.1]),
+          [0.05, 0.05, 0.18], { radioAbajo: 0.8, radioArriba: 0.55 }),
+        // La brasa va EN el anclaje: es la punta, y es lo único claro de la
+        // silueta de alguien fumando en la penumbra.
+        piezaAvatar(`${prefijo}Brasa`, mezclar(AVATAR.brasa, AVATAR.brasaCalada, calada), sobre(anclas.boca, [0, 0, 0]),
+          [0.06, 0.06, 0.06], { radioAbajo: 0.8, radioArriba: 0.45 }),
       ];
     }
-    // Hombros: las dos manos abiertas hacia fuera y arriba. «Yo qué sé».
-    case "hombros":
-      return [mano("Izq", [-0.46, yTorso, 0.16]), mano("Der", [0.46, yTorso, 0.16])];
-    // Pensar: una mano en la barbilla. En un juego de faroleo es el gesto más
-    // útil de todos, porque dice «me lo estoy pensando» sin decir qué.
-    case "pensar":
-      return [mano("Izq", [-0.3, reposo, 0.06]), mano("Der", [0.12, yCabeza - 0.16, 0.26])];
     default:
-      return [mano("Izq", [-0.3, reposo, 0.06]), mano("Der", [0.3, reposo, 0.06])];
+      return [];
   }
 }
 
-function rasgoDeRaza(raza, { px, pz, yCabeza, altoCabeza, ancho, piel, prefijo }) {
+/**
+ * El rasgo que hace reconocible a una raza de un vistazo (#1027): una pieza y
+ * no un retrato. Cuelga del punto de la CABEZA que da el rig y gira con el
+ * cuerpo (`sobreCuerpo`), así que no repite ni una cuenta de proporción — que
+ * es la regla de #897 y el motivo de que este módulo ya no las tenga.
+ */
+function rasgoDeRaza(raza, { p, altoCabeza, ancho, piel, prefijo, yaw = 0 }) {
+  const enLaCabeza = (nombre, desplazamiento, medidas, opciones) =>
+    piezaAvatar(`${prefijo}${nombre}`, piel, sobreCuerpo(p.cabeza, desplazamiento, yaw), medidas, opciones);
   if (raza === "enano") {
-    return [piezaAvatar(`${prefijo}Barba`, piel, [px, yCabeza - altoCabeza * 0.22, pz + 0.17], [0.24 * ancho, altoCabeza * 0.5, 0.2], { radioAbajo: 0.15, radioArriba: 0.75 })];
+    return [enLaCabeza("Barba", [0, -altoCabeza * 0.22, 0.17], [0.24 * ancho, altoCabeza * 0.5, 0.2], { radioAbajo: 0.15, radioArriba: 0.75 })];
   }
   if (raza === "elfo") {
     return [
-      piezaAvatar(`${prefijo}OrejaIzq`, piel, [px - 0.25 * ancho, yCabeza + altoCabeza * 0.06, pz], [0.2 * ancho, altoCabeza * 0.16, 0.1], { radioAbajo: 0.8, radioArriba: 0.05 }),
-      piezaAvatar(`${prefijo}OrejaDer`, piel, [px + 0.25 * ancho, yCabeza + altoCabeza * 0.06, pz], [0.2 * ancho, altoCabeza * 0.16, 0.1], { radioAbajo: 0.8, radioArriba: 0.05 }),
+      enLaCabeza("OrejaIzq", [-0.25 * ancho, altoCabeza * 0.06, 0], [0.2 * ancho, altoCabeza * 0.16, 0.1], { radioAbajo: 0.8, radioArriba: 0.05 }),
+      enLaCabeza("OrejaDer", [0.25 * ancho, altoCabeza * 0.06, 0], [0.2 * ancho, altoCabeza * 0.16, 0.1], { radioAbajo: 0.8, radioArriba: 0.05 }),
     ];
   }
   if (raza === "mediano") {
-    return [piezaAvatar(`${prefijo}CabezaGrande`, piel, [px, yCabeza + altoCabeza * 0.08, pz], [0.42 * ancho, altoCabeza * 0.25, 0.4], { radioAbajo: 0.65, radioArriba: 0.85 })];
+    return [enLaCabeza("CabezaGrande", [0, altoCabeza * 0.08, 0], [0.42 * ancho, altoCabeza * 0.25, 0.4], { radioAbajo: 0.65, radioArriba: 0.85 })];
   }
   return [];
 }
@@ -297,9 +366,14 @@ function rasgoDeRaza(raza, { px, pz, yCabeza, altoCabeza, ancho, piel, prefijo }
  * El distintivo de la clase: una pieza, no un equipo completo. Lo que se busca
  * es reconocer a alguien al otro lado de la sala, no inventariar su mochila —y
  * a esta resolución dos cajas más ya son una mancha.
+ *
+ * Va colgado del anclaje `hombro`, que es un hueso: no hay aquí ni una cuenta
+ * de proporción de cuerpo.
  */
-function distintivoDeClase(clase, { px, py, pz, ancho, altoTorso, prefijo }) {
-  const alHombro = (color, medidas, opciones) => [piezaAvatar(`${prefijo}Distintivo`, color, [px + 0.34 * ancho, py + altoTorso * 0.35, pz - 0.16], medidas, opciones)];
+function distintivoDeClase(clase, { anclas, altoTorso, prefijo }) {
+  const alHombro = (color, medidas, opciones) => [
+    piezaAvatar(`${prefijo}Distintivo`, color, anclas.hombro.punto, medidas, opciones),
+  ];
   switch (clase) {
     // Armas al hombro: la silueta de un mandoble asomando por encima es
     // exactamente cómo se reconocía a un personaje en aquellos juegos.
@@ -390,17 +464,12 @@ export function anclasHumoDeLaGente(gente = [], { omitirId = null } = {}) {
   for (const { persona, pies, indice } of gentePorSitio(gente, { omitirId })) {
     const av = normalizarAvatar(persona);
     if (av.gesto !== "fumar") continue;
-    const cuerpo = CUERPO_POR_RAZA[av.raza];
-    const escala = ALTO_BASE * cuerpo.alto;
-    const ancho = cuerpo.ancho * SILUETA_ANCHO[av.silueta];
-    const altoCabeza = escala * 0.26;
-    const altoTorso = escala * 0.36;
-    const altoPiernas = escala - altoCabeza - altoTorso;
-    const [px, py, pz] = pies;
-    const yCabeza = py + altoPiernas + altoTorso + altoCabeza / 2;
-    const [hx, hy, hz] = puntaDelCigarro({ px, pz, yCabeza, ancho });
+    // El humo sale de la punta del cigarro, que es el anclaje `boca` del rig.
+    // Antes esta cuenta estaba repetida aquí entera —proporción de cuerpo
+    // incluida— y era la copia que #439 ya tuvo que rescatar una vez.
+    const { punto } = anclasAvatar(medidasDeAvatar(av, pies)).boca;
     anclas.push(
-      Object.freeze({ punto: [hx, hy, hz], tipo: "humo", largo: 1.4, indice }),
+      Object.freeze({ punto: [...punto], tipo: "humo", largo: 1.4, indice }),
     );
   }
   return anclas;

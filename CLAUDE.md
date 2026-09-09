@@ -265,7 +265,16 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     es hoy por centroide de cara y es la deuda viva de #510 —empata entre caras que se tocan, que
     es el parpadeo que ve QA—; lo ya intentado y descartado (epsilon con orden estable; Newell sin
     partir caras, que empeora la medida) está escrito en la cabecera de `retro3d.mjs` para no
-    repetirlo por cuarta vez. El arte de ficha de
+    repetirlo por cuarta vez. Para ver lo que este motor dibuja de VERDAD —no una maqueta con su
+    propia proyección— está el banco de pruebas de `tools/banco-3d/` (#976): `index.html`/`app.mjs`
+    importan `retro3d.mjs`/`retro3d-lienzo.mjs` por ESM y pintan en un `<canvas>` real con controles
+    de malla, época, giro de cámara y fase de marcha; `capturar.mjs` sirve esa página con
+    `servidor.mjs` (HTTP nativo, sin dependencias) y la abre con el Playwright ya instalado en
+    `tools/e2e-visual` (reutilizado por `createRequire`, no una segunda copia) para guardar un PNG
+    por ángulo. Las cinco reglas geométricas de #976/#974 (caras no rectangulares, proporción,
+    pie plantado, huellas, silueta por clase) son predicados puros en
+    `tools/comprobaciones-avatar.mjs`, probados con `node --test` sobre casos sintéticos — la
+    geometría de avatar en sí (hoy cajas en `tools/banco-figura.mjs`) sigue siendo #974. El arte de ficha de
     naves narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
     `scripts/png-indexado.mjs`) se genera **solo por clic del GM** y escribe el token prototipo:
     nunca sondea ni sincroniza posición, porque un documento persistente que espeje la simulación
@@ -619,6 +628,21 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `crearSalaCaja`), nunca por un `if` con el nombre de la sala dentro de la fábrica. La celda
     sigue siendo la de la nave: un cuadro baja a 1,25 cm porque su detalle no cabía, y una pared de
     galería no quiere más detalle sino menos.
+    La **arena de combate** (`scripts/arena-combate-escena.mjs` + `combate-rejilla.mjs`, #1013)
+    es el tercer sitio con esa misma forma —solo-GM, se entra por herramienta y se sale por un
+    punto de interacción, fuera de las invariantes de la nave y del minimapa— y por el motivo
+    llevado al extremo: 30 × 20 casillas de cinco pies son 45,7 × 30,5 m, y eso no cabe dentro de
+    una fragata. Lo que viene a comprobar es si un combate en rejilla se puede **jugar andando por
+    dentro** y no solo desde arriba: un tablero se ve de un vistazo, cruzarlo a pie tarda, y esa
+    diferencia es justo lo que ninguna vista cenital enseña — por eso la medida es el contenido y
+    no un parámetro. El borde **se declara** en vez de disimularse: el cierre es un dato
+    (`arboleda`, `mazmorra`) y no un muro invisible, porque un límite por el que no se pasa tiene
+    que ser algo que el sitio ya tendría. La rejilla vive aparte y en CASILLAS
+    (`combate-rejilla.mjs`: alcance, línea, ocupación); la escena hace la única traducción a metros
+    que hace falta, en un solo sitio. El presupuesto medido está en la cabecera del módulo, y su
+    reparto es la lección: el claro cuesta ~2100 polígonos igual con 4 cuerpos que con 32, y cada
+    cuerpo añade unos 16 — la población no es el gasto, así que si algún día hay que recortar se
+    recorta arboleda, no combatientes.
     Los **cuadros** de sus muros laterales (#836) son la SEGUNDA forma de colgar y no un parámetro
     de la primera: una escultura se apoya en un pedestal y se rodea, un cuadro cuelga de un muro y
     solo se mira de frente, así que van en catálogo aparte (`museo-cuadros.mjs`) validado por el
@@ -692,6 +716,20 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     —la escena se veía perfecta en una captura y estaba muerta— y que un muro lateral queda
     SIEMPRE en el suelo ambiente de 0,35 porque la luz del motor no le da, así que los cuadros de
     ese lado pierden el color, y como #836 alterna de muro en muro es media colección.
+    La
+    **convocatoria** (`scripts/convocatoria-estancia.mjs`, puro, + el cable
+    `scripts/convocatoria-difusion.mjs`, #689) es lo que hace que el museo no sea decorado para
+    una sola persona: el GM pulsa su botón y la mesa entera aparece dentro. Por el canal viaja
+    el **id de la estancia** y nada más — la posición que calcula el módulo puro se queda en el
+    emisor, donde sirve de acreditación de que la entrada es pisable, porque `resolverArranque`
+    ya deja a quien llega en esa misma `entrada`. Y la forma de abrir la ventana se le **pasa**
+    al registrador desde `main.mjs`: `abrirAndarNave` es local de ahí, y suponerla fue el
+    `ReferenceError` que cerró el PR #675. La playa no convoca (su botón sigue abriendo solo):
+    es un banco de pruebas del motor de exteriores, no contenido. La convocatoria viaja por un
+    **ajuste de mundo** (`scope: "world"`), no un socket crudo (#876): Foundry solo deja escribir
+    un ajuste de mundo a quien tiene permiso de modificar ajustes del juego (el GM), comprobado
+    por el servidor al escribir — la primera versión escuchaba el socket compartido sin acreditar
+    al emisor, y un jugador podía emitir el payload directamente.
     Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
     acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
     `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,

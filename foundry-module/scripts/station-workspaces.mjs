@@ -2,7 +2,7 @@ import { STATIONS, normalizeStation, uncrewedStations } from "./station-assignme
 import { isActionAllowed } from "./station-actions.mjs";
 import { SISTEMAS_INGENIERIA, NIVELES_POTENCIA, NIVELES_REFRIGERANTE } from "./ingenieria-control.mjs";
 import { prepareDocking, prepareSystemRows } from "./ship-view/ship-view.mjs";
-import { filasCrudas, filasDegradadas } from "./sensores-lista.mjs";
+import { filasCrudas, filasDegradadas } from "./sensores/sensores-lista.mjs";
 import { retratoTripulanteDataUri } from "./avatar/retrato-tripulante.mjs";
 
 // Marca visible de «no hay lectura», distinta de cualquier valor real.

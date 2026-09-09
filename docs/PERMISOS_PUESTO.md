@@ -46,7 +46,7 @@ puesto — con una única excepción de presentación:
   identifica (indicativo, facción); entre corto y largo es un eco sin
   nombre; más allá del largo no se publica ni se cuenta. La misma
   degradación llega a todos los puestos de tripulación por igual —
-  `foundry-module/scripts/contactos-degradados.mjs`, puro, sin red, es el
+  `foundry-module/scripts/sensores/contactos-degradados.mjs`, puro, sin red, es el
   precedente de "degradar en origen, no al pintar" que cualquier lectura
   nueva por puesto debería seguir si algún día existe.
 - **Lo único que sí varía por puesto** es qué panel se muestra —

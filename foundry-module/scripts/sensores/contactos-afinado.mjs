@@ -12,7 +12,7 @@
 //
 // Puro: ni Foundry, ni DOM, ni red.
 
-import { ESTADO_LECTURA, afinarContacto } from "./asistencia/bandas-sensores.mjs";
+import { ESTADO_LECTURA, afinarContacto } from "../asistencia/bandas-sensores.mjs";
 
 /**
  * Mapea la banda espacial del contacto (`corto`/`largo`) a un estado inicial

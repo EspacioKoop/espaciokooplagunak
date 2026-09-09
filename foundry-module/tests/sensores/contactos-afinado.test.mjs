@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { aplicarAfina } from "../scripts/contactos-afinado.mjs";
-import { degradarContactos } from "../scripts/contactos-degradados.mjs";
+import { aplicarAfina } from "../../scripts/sensores/contactos-afinado.mjs";
+import { degradarContactos } from "../../scripts/sensores/contactos-degradados.mjs";
 
 describe("contactos-afinado", () => {
   it("sin afinado devuelve el mismo payload", () => {

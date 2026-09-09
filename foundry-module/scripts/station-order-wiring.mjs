@@ -3,7 +3,7 @@ import { getBridgeToken } from "./bridge-token-session.mjs";
 import { normalizeStation } from "./station-assignment.mjs";
 import { prepararOrdenConAsistencia } from "./asistencia-wiring.mjs";
 import { RELEVO_AVISOS } from "./asistencia/relevo.mjs";
-import { resolverObjetivoEscaneo } from "./resolver-objetivo-sensores.mjs";
+import { resolverObjetivoEscaneo } from "./sensores/resolver-objetivo-sensores.mjs";
 import { resolverPosicionRelativa } from "./resolver-posicion-relay.mjs";
 import {
   STATION_ORDER_FLAG,

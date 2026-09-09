@@ -47,18 +47,23 @@ export function crearClaseConvocatoriaV2({ onSubmit }) {
       return { categorias, roles };
     }
 
-    /** Al hacer click en el botón, llamar al callback y cerrar. */
+    /** Al enviar, llamar al callback y cerrar SOLO si convocó de verdad.
+     *
+     * Cerrar antes de saber el resultado (#832) hace que la ventana se
+     * comporte igual publicando que fallando: quien convoca se queda creyendo
+     * que ha llamado a la tripulación mientras el ajuste no se ha escrito. Un
+     * callback que no devuelva promesa sigue funcionando: `await` sobre un
+     * valor cualquiera lo trata como éxito. */
     _onRender(context, options) {
       super._onRender?.(context, options);
       const form = this.element?.querySelector("form");
       if (form) {
-        form.addEventListener("submit", ev => {
+        form.addEventListener("submit", async ev => {
           ev.preventDefault();
           const idEstancia = this.element?.querySelector('[name="idEstancia"]')?.value;
           const rolConvocante = this.element?.querySelector('[name="rolConvocante"]')?.value;
           if (idEstancia && rolConvocante) {
-            onSubmit({ idEstancia, rolConvocante });
-            this.close();
+            if ((await onSubmit({ idEstancia, rolConvocante })) !== null) this.close();
           }
         });
       }
@@ -94,17 +99,22 @@ export function crearClaseConvocatoriaV1({ onSubmit }) {
       return { categorias, roles };
     }
 
-    /** Al hacer click en el botón, llamar al callback y cerrar. */
+    /** Al enviar, llamar al callback y cerrar SOLO si convocó de verdad.
+     *
+     * Cerrar antes de saber el resultado (#832) hace que la ventana se
+     * comporte igual publicando que fallando: quien convoca se queda creyendo
+     * que ha llamado a la tripulación mientras el ajuste no se ha escrito. Un
+     * callback que no devuelva promesa sigue funcionando: `await` sobre un
+     * valor cualquiera lo trata como éxito. */
     activateListeners(html) {
       super.activateListeners(html);
       const form = html.find("form");
-      form.on("submit", ev => {
+      form.on("submit", async ev => {
         ev.preventDefault();
         const idEstancia = html.find('[name="idEstancia"]').val();
         const rolConvocante = html.find('[name="rolConvocante"]').val();
         if (idEstancia && rolConvocante) {
-          onSubmit({ idEstancia: idEstancia, rolConvocante: rolConvocante });
-          this.close();
+          if ((await onSubmit({ idEstancia: idEstancia, rolConvocante: rolConvocante })) !== null) this.close();
         }
       });
       // Enfocar el primer campo.

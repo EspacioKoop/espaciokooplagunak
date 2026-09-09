@@ -360,6 +360,7 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     // jugador no le dice nada y le invitaría a pedir cambios en la instalación
     // de otro.
     "lagunak-contenido-externo",
+    "lagunak-importar-atlas",
     // Echar una mano (#309) la ve TODA la tripulación, GM incluido: ayudar es
     // cruzar de puesto por definición, y un botón solo-GM no sería cooperación.
     "lagunak-asistencia",

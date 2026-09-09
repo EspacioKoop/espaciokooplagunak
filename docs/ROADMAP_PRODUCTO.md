@@ -95,7 +95,7 @@ no es la fuente del atlas, la campaña ni la persistencia.
 | Jugadores objetivo | 1–10; banda ideal 3–6. El mínimo jugable es 1 con puestos asistidos |
 | Alcance de la integración Foundry | Solo la capa de rol de la mesa; nunca requisito del juego |
 | Base de reglas de rol | SRD 5.1 (5e 2014) bajo **CC BY 4.0**, con atribución — no «fair use»; nada de reglas 2024 |
-| Comportamiento de puestos vacíos | Política acordada en [#512](https://github.com/EspacioKoop/espaciokooplagunak/issues/512): sin IA autónoma; conservar el último valor y avisar de que el puesto está vacío |
+| Puestos sin tripulación | Degradado con aviso: el sistema conserva su último valor ordenado (nativo) y la nave avisa; sin automatización ni suplencia — [ADR-0017](adr/0017-puestos-vacios-degradado-con-aviso.md) |
 | Divergencia de upstream | Permitida cuando aporte mejora tangible, siguiendo [UPSTREAM.md](UPSTREAM.md) y con su propio ADR |
 
 Pendientes de acordar entre Varo y Eloy: límite inicial de expediciones
@@ -211,10 +211,12 @@ operacional — **satisfecho**, ver
 [`VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md`](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md)
 y [`SESION-NAVEGACION-OPERACIONAL.md`](SESION-NAVEGACION-OPERACIONAL.md):
 `set_target_heading`/`set_impulse`/`set_warp` ya son una decisión exclusiva
-del puesto que cambia el resultado de un encuentro), #481 (automatización de
-puestos vacíos — **verificado: no existe automatización nativa**, sistema sin
-tripulación queda congelado en su último valor; la decisión de diseño sobre
-qué comportamiento adoptar queda trazada en #512, ver
+del puesto que cambia el resultado de un encuentro), #481/#512 (automatización
+de puestos vacíos — **decidido**: degradado con aviso, sin automatización ni
+suplencia, registrado en
+[ADR-0017](adr/0017-puestos-vacios-degradado-con-aviso.md); #481 verificó que
+no existe automatización nativa —sistema sin tripulación queda congelado en su
+último valor— y #512 formalizó qué comportamiento adoptar sobre esa base; ver
 [`VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md`](VERIFICACION-NAVEGACION-Y-AUTOMATIZACION.md)),
 #482 (alarmas compartidas por dependencia entre sistemas — **mergeado**, PR
 #494: es dependencia entre sistemas, distinta del nivel de alerta de #338 en
@@ -229,9 +231,10 @@ quedar todos trazados y satisfechos.
 **Estado a 2026-09-03**: quedan dos frentes abiertos: #467 (playtest con 3+
 personas, que puede usar la crisis de #484 como su escenario de prueba y no se
 puede cerrar solo con código) y #951 (implementar y probar el aviso para puestos
-vacíos según la decisión de #512 formalizada arriba; #481 verificó que hoy no
-hay automatización nativa alguna). La etapa está, por tanto, esperando a una
-sesión con personas y a esa implementación, no a otra decisión de producto.
+vacíos según la decisión de #512 formalizada en [ADR-0017](adr/0017-puestos-vacios-degradado-con-aviso.md);
+#481 verificó que hoy no hay automatización nativa alguna). La etapa está, por
+tanto, esperando a una sesión con personas y a esa implementación, no a otra
+decisión de producto.
 
 ### Etapa C — Nave persistente y progresión
 

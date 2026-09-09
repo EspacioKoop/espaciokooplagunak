@@ -203,3 +203,22 @@ escribir un convertidor glTF desde cero. Se deja constancia aquí en vez de
 inventar un comando que nunca se ejecutó — la corrección pendiente es escribir
 un convertidor glTF genérico y volver a generar la malla con la ficha
 registrada, igual que exige `convertir-estatua.mjs` para STL.
+## The Open Window — Saki (semilla procedural para #853)
+
+Propuesta de obra de dominio público como semilla visual para el libro 3D
+interactuable de issue #853. No se redistribuye texto ni imagen escaneada: las
+páginas del libro se pintan proceduralmente como mancha tipográfica/atmosférica.
+
+| Obra | *The Open Window*, cuento de Saki (H. H. Munro). |
+|---|---|
+| **Qué es el fichero** | No se incluye archivo del libro. Solo se usa título, ambientación y estructura como seed para generación procedural de páginas en rejilla. |
+| **Autoría original** | Saki (H. H. Munro), fallecido en 1916. |
+| **Licencia** | Public domain en EE. UU. |
+| **Verificación** | Project Gutenberg, colección *Beasts and Super-Beasts*, ID 269: autor Saki, contenido incluye *The Open Window*, estado «Public domain in the USA». El ID 11639 citado antes corresponde a *Figures of Earth* de Cabell y no acredita este cuento. |
+| **Enlace** | https://www.gutenberg.org/ebooks/269 |
+| **Archivo en repo** | No aplica; no se distribuye contenido del libro. |
+| **sha256** | No aplica. |
+| **Cómo se genera** | Páginas pintadas con `scripts/libro-pagina.mjs` usando `chapasDeRejilla`, sin texto legible ni binarios. |
+
+**Nota:** Si en el futuro se incluyera una cubierta o interior escaneado, haría
+falta una segunda ficha para ese archivo concreto con su propia licencia y sha256.

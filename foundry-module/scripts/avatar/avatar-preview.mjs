@@ -13,6 +13,7 @@
 // Frontera de arte (#351): no declara ni un color.
 
 import { componerEscena, fundirEscenas } from "../retro3d.mjs";
+import { mallaDePieza } from "../escena-primitivas.mjs";
 import { piezasAvatar } from "../cantina-avatar.mjs";
 
 /** Sin giro de reposo: aquí no hay que reconocer un objeto al otro lado de la
@@ -27,7 +28,7 @@ export function componerAvatarPreview(descripcion, opciones = {}) {
   const piezas = piezasAvatar(descripcion, { pies: [0, -0.95, 0] });
 
   const partes = piezas.map((pieza) =>
-    componerEscena(desplazar(pieza.malla, pieza.centro), {
+    componerEscena(mallaDePieza(pieza), {
       ancho,
       alto,
       epoca,
@@ -51,11 +52,3 @@ export function componerAvatarPreview(descripcion, opciones = {}) {
   return { ancho, alto, epoca: partes[0]?.epoca, poligonos };
 }
 
-/** Mueve una malla sin tocar la original — misma función que `cantina-icono.mjs`,
- * duplicada porque ninguna de las dos la expone y son piezas independientes. */
-function desplazar(malla, [dx, dy, dz] = [0, 0, 0]) {
-  return {
-    vertices: malla.vertices.map(([x, y, z]) => [x + dx, y + dy, z + dz]),
-    caras: malla.caras,
-  };
-}

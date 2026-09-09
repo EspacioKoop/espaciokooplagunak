@@ -1,12 +1,15 @@
-# ADR-0017 — Atlas cosmográfico: nodo mínimo y referencia débil a `MapDocument`
+# ADR-0018 — Atlas cosmográfico: nodo mínimo y referencia débil a `MapDocument`
 
-- Estado: Aceptada
+- Estado: Propuesta
 - Fecha: 2026-09-01
 - Decisores: @VaroTv7, @eGurucharri
 - Issue relacionado: #213
-- PR relacionado: (este PR)
+- PR relacionado: #870
 - Fuentes: `foundry-module/scripts/catalogo-cosmografico.mjs` (#525/#214),
   `foundry-module/scripts/procedencia-catalogo.mjs` (#598), ADR-0008, `docs/FOUNDRY.md`
+
+La propuesta documenta el contrato implementado; su integración no sustituye
+la aceptación humana conjunta del atlas en #213.
 
 ## Contexto
 

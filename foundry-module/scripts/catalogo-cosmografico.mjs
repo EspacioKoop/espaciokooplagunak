@@ -19,7 +19,7 @@
 // con `cimiento: true`, así que la guarda de alcanzabilidad de #523 no se queja
 // de él — pero fallará el día que se cablee y nadie actualice esa lista.
 //
-// `map_ref` (ADR-0017) es un enlace DÉBIL y opcional a un `MapDocument` táctico:
+// `map_ref` (ADR-0018) es un enlace DÉBIL y opcional a un `MapDocument` táctico:
 // solo un ID portable, nunca el documento incrustado. El nodo cosmográfico sigue
 // siendo válido si ese mapa no existe todavía o si se borra después — el atlas
 // no depende de que el mapa exista, y el mapa no carga con la cosmografía.

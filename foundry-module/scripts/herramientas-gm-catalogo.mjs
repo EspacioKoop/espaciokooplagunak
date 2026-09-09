@@ -12,13 +12,13 @@
  */
 
 /**
- * @param {{ abrirPanelGM: () => void, abrirAndarNave: (estancia?: string|null) => void }} manejadores
+ * @param {{ abrirPanelGM: () => void, abrirAndarNave: (estancia?: string|null) => void, convocarEstancia: (estancia: string) => void }} manejadores
  * @returns {Array<object>} las herramientas solo-GM del grupo, en el mismo
  *   orden y forma que espera `getSceneControlButtons` (rama v11/v12 y v13
  *   comparten esta forma; la bifurcación de array/record vive en
  *   `control-escena.mjs`, #448).
  */
-export function construirHerramientasGM({ abrirPanelGM, abrirAndarNave }) {
+export function construirHerramientasGM({ abrirPanelGM, abrirAndarNave, convocarEstancia }) {
   return [
     {
       // Puerta única al panel de GM (#448), que sustituye los botones
@@ -48,11 +48,16 @@ export function construirHerramientasGM({ abrirPanelGM, abrirAndarNave }) {
       // La sala del museo (#598). Solo GM por el mismo motivo que la playa:
       // no es contenido de campaña, es un sitio que ENSEÑA piezas con su
       // procedencia. No concede nada y no recuerda la visita.
+      //
+      // CONVOCA, no abre solo (#689). El museo es la estancia cuyo verbo es
+      // ENSEÑAR, y enseñar a nadie no es nada: el GM se lleva a la mesa
+      // consigo. La playa sigue abriéndose sola porque es un banco de
+      // pruebas del motor de exteriores, no contenido.
       name: "lagunak-museo",
       title: "LAGUNAK.Controles.AbrirMuseo",
       icon: "fa-solid fa-landmark",
       button: true,
-      onClick: () => abrirAndarNave("museo"),
+      onClick: () => convocarEstancia("museo"),
     },
   ];
 }

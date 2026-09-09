@@ -18,7 +18,8 @@ condicionan el trabajo diario:
   empezar: media docena de archivos (este mismo, `lang/*.json`, `main.mjs`, `paleta.mjs` y sus
   guardas) los toca casi cualquier trabajo del módulo, y ahí es donde chocan dos ramas que por lo
   demás no se rozan. Los agentes especializados del proyecto van versionados en
-  [`.claude/agents/`](.claude/agents).
+  [`.claude/agents/`](.claude/agents); los agentes seleccionables desde VS Code viven en
+  [`.github/agents/`](.github/agents).
 - No afirmes que algo compila, arranca o funciona si no has ejecutado la comprobación correspondiente.
 - Nada de `push --force`, `reset --hard`, squash del historial heredado ni reescritura de historial
   sin autorización humana explícita.
@@ -180,6 +181,20 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     correcto, una decena es un enlace copiado. Para declarar o
     reclasificar un módulo, edita el JSON y ejecuta
     `python3 scripts/check_orphan_modules.py --check` más las suites Python y Node del área.
+    Que `unknown` no rompa CI protege a lo que YA está en el árbol, no a lo que llega: por esa
+    puerta entraron `combatiente-pixelart.mjs` (#1018) y estuvieron a punto de entrar los doce
+    módulos del bloque de combate (#1012–#1035) a la vez. De ahí la guarda sobre el **delta**:
+    `--nuevos <fichero>` recibe las rutas que el PR ESTRENA (`git diff --diff-filter=A base...HEAD`)
+    y exige que cada módulo nuevo quede `connected` o declarado — un `unknown` heredado sigue sin
+    bloquear a nadie, pero uno recién escrito sí, porque quien acaba de escribirlo es justo quien
+    sabe si es un cimiento deliberado o un cable que se olvidó. Corre en el job `tests` de
+    `foundry-module.yml`, solo en `pull_request` (en un push a `main` no hay base con la que
+    comparar). Caza además el otro escape de la misma tanda: un módulo nuevo con colores propios
+    fuera de `artModules`, que `paleta.test.mjs` no puede ver porque solo recorre esa lista.
+    `--proponer` imprime el esqueleto de la declaración que falta y `--escribir` lo aplica, pero
+    **el motivo y la evidencia van marcados con `RELLENAR` y la validación los rechaza** hasta que
+    alguien los escriba: una herramienta que los inventara sería el relleno de #822 generado más
+    deprisa, no una automatización.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
     cuatro factorías originales (estado de nave y mapa vivo, V1/V2) en una sola ventana con pestañas
     (Estado, Mapa, Encuentros, Previsualización) y UN solo bucle de sondeo y backoff, sustituyendo
@@ -339,7 +354,7 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `scripts/nave-sala-caja.mjs` sigue siendo la fábrica de sala —muros, puertas, columnas,
     VENTANAS y la PIEL de los muros—, y la ventana se **decide** en vez de escribirse: un muro sin vecino es casco, y el
     casco ve el espacio. Lo que se ve por ella es **otra vista del espacio real** y no un cielo de
-    adorno (`scripts/nave-ventana-espacio.mjs`, #541): reusa `visor-piloto.mjs` para situar los
+    adorno (`scripts/nave-ventana-espacio.mjs`, #541): reusa `visor-piloto/visor-piloto.mjs` para situar los
     contactos por marcación, pasándole el rumbo de la nave MÁS el del muro, así que la vista gira con
     la nave y cada ventana mira a donde le toca. No abre ningún dato nuevo —es la MISMA lectura
     degradada que ya se difunde a la tripulación— y conserva su disciplina: lo que queda a la espalda
@@ -573,15 +588,124 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     hecha después de que destruyeran el original, o que llame mármol a un vaciado en yeso. El crédito
     de la cartela se **deriva** de la procedencia y no se escribe al lado, misma regla que el cartel
     de reglas del blackjack (#553). La **sala del museo** (`scripts/museo-escena.mjs` +
-    `museo-piezas.mjs`, con `MUSEO` en `paleta.mjs`) es su primer consumidor real: tres vaciados
-    sobre pedestales, andable, solo-GM, con la entrada por herramienta de la barra de escena y la
-    salida por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo
-    (el Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha
-    decidido). Los **cuadros** (#836) son la segunda forma de colocar: pixelart `obra-propia`
-    generado por el módulo que cuelga de los muros laterales con la misma primitiva que la piel de
-    la sala (`chapasDeRejilla` sobre la cara interior del muro), a su propia celda de 2,5 cm —el
-    mando de escala, declarado una sola vez en `nave-cuadro.mjs`—, y reusa la acción de cartela de
-    #598; la cartela dice qué enseña exactamente y no marca la pieza como vista. Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
+    `museo-piezas.mjs`, con `MUSEO` en `paleta.mjs`) es su primer consumidor real: tres piezas sobre
+    pedestales, andable, solo-GM, con la entrada por herramienta de la barra de escena y la salida
+    por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el
+    Phobos no tiene un museo, y colgarlo de un mamparo contaría una historia que nadie ha decidido).
+    Por eso está fuera de las invariantes de la nave en `nave-planta-phobos.test.mjs` y del minimapa.
+    Y por eso sus **muros tienen piel propia** (`museo-mural.mjs`, #838) en vez de la chapa
+    remachada de serie: es el mismo argumento con el que la sala ya apagaba `pielObjetos` —un
+    pedestal remachado es un material equivocado— aplicado a la superficie que más importa, el
+    fondo contra el que se lee lo colgado. Es una pared de galería —rodapié, paño liso con sus
+    juntas de tablero, riel de cuelgue a 2,10 m, cornisa— y está **vacía a propósito**: el mural de
+    la nave presume de premiar que te acerques, y aquí eso sería un error, porque cada greeble
+    compite con la obra. Que cueste 32 rectángulos por muro largo frente a 504 es la CONSECUENCIA
+    de esa decisión y no su motivo. Se engancha por parámetro (`piezasPielMuro` en
+    `crearSalaCaja`), nunca por un `if` con el nombre de la sala dentro de la fábrica. La celda
+    sigue siendo la de la nave: un cuadro baja a 1,25 cm porque su detalle no cabía, y una pared de
+    galería no quiere más detalle sino menos.
+    La **arena de combate** (`scripts/arena-combate-escena.mjs` + `combate-rejilla.mjs`, #1013)
+    es el tercer sitio con esa misma forma —solo-GM, se entra por herramienta y se sale por un
+    punto de interacción, fuera de las invariantes de la nave y del minimapa— y por el motivo
+    llevado al extremo: 30 × 20 casillas de cinco pies son 45,7 × 30,5 m, y eso no cabe dentro de
+    una fragata. Lo que viene a comprobar es si un combate en rejilla se puede **jugar andando por
+    dentro** y no solo desde arriba: un tablero se ve de un vistazo, cruzarlo a pie tarda, y esa
+    diferencia es justo lo que ninguna vista cenital enseña — por eso la medida es el contenido y
+    no un parámetro. El borde **se declara** en vez de disimularse: el cierre es un dato
+    (`arboleda`, `mazmorra`) y no un muro invisible, porque un límite por el que no se pasa tiene
+    que ser algo que el sitio ya tendría. La rejilla vive aparte y en CASILLAS
+    (`combate-rejilla.mjs`: alcance, línea, ocupación); la escena hace la única traducción a metros
+    que hace falta, en un solo sitio. El presupuesto medido está en la cabecera del módulo, y su
+    reparto es la lección: el claro cuesta ~2100 polígonos igual con 4 cuerpos que con 32, y cada
+    cuerpo añade unos 16 — la población no es el gasto, así que si algún día hay que recortar se
+    recorta arboleda, no combatientes.
+    Los **cuadros** de sus muros laterales (#836) son la SEGUNDA forma de colgar y no un parámetro
+    de la primera: una escultura se apoya en un pedestal y se rodea, un cuadro cuelga de un muro y
+    solo se mira de frente, así que van en catálogo aparte (`museo-cuadros.mjs`) validado por el
+    MISMO `validarCatalogoPiezas`. Los ganchos SALEN DE LO QUE MIDE LA SALA, igual que las columnas
+    de pedestales: un tramo de muro libre (ni en la esquina de la entrada ni detrás de las
+    esculturas) partido por el ancho del cuadro más su hueco, hoy tres por muro, y se ALTERNA de
+    muro en muro para que la colección no se amontone a un lado. Pasarse de ganchos revienta. El dibujo es `scripts/museo-cuadro.mjs`, y su regla es que un
+    cuadro no tiene imagen que pegar —el motor no mapea texturas y no hay binarios—: se pinta con
+    `chapasDeRejilla` como la piel del muro, pero **con celda propia** de 1,25 cm (2,5 hasta #838),
+    porque a los 10 cm del mural un lienzo de 1,2 × 0,8 m tiene doce por ocho píxeles. Bajar la
+    celda compartida para conseguirlo es justo el fallo de #551 — y `MARCO` sube de 2 a 4 celdas a
+    la vez que la celda baja, que es ese mismo fallo en pequeño: lo escrito en filas se parte por
+    la mitad en silencio. El marco lleva su bisel **pintado** (es un objeto de la sala) y el lienzo
+    **no**: biselar la pintura la convertiría en chapa remachada. Desde #838 ese bisel es una
+    **moldura** de tres anillos (`marcoMoldura`) y no una línea: canto que sube fuera, cuerpo del
+    listón, y un rebaje interior con la luz AL REVÉS — sin esa inversión el lienzo parece pegado
+    encima del listón en vez de encajado detrás. Cabe porque la celda del cuadro es ocho veces más
+    fina que la del muro, que es la misma razón por la que el dibujo tiene detalle.
+    **El relieve GEOMÉTRICO se probó y se retiró, medido** (#838): adelantar cada masa de color
+    unos milímetros y sacarle los costados cambiaba entre 0 y 168 píxeles de los 129.600 del
+    fotograma, y ni con cinco centímetros de empaste pasaba del 0,3 %. Un cuadro colgado se mira de
+    frente, así que sus costados se ven de canto y a esta resolución no llegan a un píxel — lo
+    mismo que hacía que no costara polígonos en pantalla es lo que hacía que no se viera. La
+    lección general: en este motor el volumen que se ve de frente es el **pintado**, y la geometría
+    solo paga cuando se mira en sesgo. Nada que se pueda
+    leer como instrumento —ni cartas estelares, ni esquemas, ni diagramas—: es #526 donde más fácil
+    sería saltárselo, y no es teórico: la revisión de #838 bloqueó por un cuadro abstracto que se
+    leía como un gráfico de barras (cuatro columnas sobre la misma base, altura creciente, un
+    remate igual en cada una), y al rehacerlo se vio que la ola de la misma tanda caía en lo mismo
+    con la coartada de ser una ola. Las dos guardas que quedan son de GRAMÁTICA y no de color ni
+    de presupuesto, que es lo que ninguna prueba anterior podía ver: ninguna masa se apoya en la
+    fila de abajo del lienzo —basta una para que el ojo busque el eje— y la cresta de la ola
+    **vuela** sobre el agua que tiene delante, que es lo único que ninguna barra puede hacer. Y el presupuesto es la condición y no una optimización posterior: cada
+    composición se comprueba **al importar** contra `TOPE_CUADRO` y revienta si no cabe, porque un
+    cuadro recortado al tope se lee como un fallo (a diferencia de un muro, al que le sobra un
+    greeble y sigue siendo un muro). Ese tope subió a 400 en #838 mientras se probaba el relieve
+    geométrico, con la medida delante: las mallas pasaban de 19–83 caras a 96–377, pero en
+    pantalla la sala pasaba de 1.461 a 1.466 polígonos —el costado de una masa está de canto a un
+    paso y cae por recorte—, o sea que el relieve se pagaba al construir la sala y no por
+    fotograma. Al retirarse el relieve geométrico (ver más abajo) volvió a bajar, esta vez a 200.
+    Lo que sí se paga es la SILUETA: una ladera que cambia de ancho en cada fila es todo escalón,
+    y de ahí que el cono y el perfil de la ola se muestreen a peldaños (`paso`, `PASO_OLA`) en vez
+    de al píxel — 671 caras costaba la ola dibujada columna a columna, el tope entero de un cuadro
+    para una sola ola. Las dos abstractas son `obra-propia` y lo **dicen**, con prueba
+    en los dos idiomas: la misma norma de la casa que obliga al León a decir que es una
+    reconstrucción. Las otras tres son **redibujos de paisajes de dominio público** a partir de
+    escaneos CC0 (Hokusai ×2, Friedrich), y estrenan el sexto valor de `NATURALEZAS`,
+    `interpretacion`: ninguno de los cinco decía la verdad, porque el fichero es nuestro —no hay ni
+    un byte del escaneo en el árbol, de la fuente sale la COMPOSICIÓN— pero la composición es de
+    otro y está identificada, y llamarla `obra-propia` sería la única forma de que la sala enseñara
+    la obra de alguien sin decirlo. Su cartela nombra la obra y a su autor en los dos idiomas, su
+    procedencia es `kind: "cc"` con la página que declara la licencia (no el fichero) y su ficha
+    está en `docs/PROCEDENCIA_ASSETS.md` SIN `sha256`: el día que una necesite un hash es que
+    alguien ha copiado algo y eso ya no es una interpretación. Se eligen por lo que sobrevive a
+    48 × 32 píxeles —masas, no detalle: un retrato es una mancha—, nunca subiendo la resolución
+    para que quepa una más.
+    El museo es además, con la playa, uno de los dos niveles del **campo de pruebas**
+    (`tools/campo-de-pruebas/`, #838): las escenas andables abiertas en un navegador sin levantar
+    ningún mundo, que es donde la regla **standalone-first** se puede COMPROBAR y no solo afirmar.
+    No duplica nada —escenas, piezas, cartelas y motor de andar se importan de
+    `foundry-module/scripts/`, y los niveles salen del propio `CATALOGO_ANDAR`—, porque una copia
+    dejaría de comprobar la sala de verdad el primer día que alguien tocara una de las dos. Lo
+    propio de la herramienta es el teclado, el `<canvas>` y el panel de cartela, que es lo que en
+    Foundry pone la ventana; y la salida de cada escena, que en la partida vuelve a la cantina,
+    aquí encadena con el siguiente nivel y lo DICE en vez de fingir un viaje que no existe. Un
+    tercer nivel es una entrada más de `niveles.mjs`. Se eligieron estas dos porque son las
+    únicas que se entran por herramienta y no cuelgan de ningún mamparo (#587, #598): las trece
+    salas del Phobos ya se visitan andando. Es además donde se mira el arte, porque el relieve de
+    un cuadro es una afirmación visual que ninguna prueba de Node demuestra, y ya ha pagado su
+    coste dos veces: encontró que el bucle no arrancaba sin inyectarle `requestAnimationFrame`
+    —la escena se veía perfecta en una captura y estaba muerta— y que un muro lateral queda
+    SIEMPRE en el suelo ambiente de 0,35 porque la luz del motor no le da, así que los cuadros de
+    ese lado pierden el color, y como #836 alterna de muro en muro es media colección.
+    La
+    **convocatoria** (`scripts/convocatoria-estancia.mjs`, puro, + el cable
+    `scripts/convocatoria-difusion.mjs`, #689) es lo que hace que el museo no sea decorado para
+    una sola persona: el GM pulsa su botón y la mesa entera aparece dentro. Por el canal viaja
+    el **id de la estancia** y nada más — la posición que calcula el módulo puro se queda en el
+    emisor, donde sirve de acreditación de que la entrada es pisable, porque `resolverArranque`
+    ya deja a quien llega en esa misma `entrada`. Y la forma de abrir la ventana se le **pasa**
+    al registrador desde `main.mjs`: `abrirAndarNave` es local de ahí, y suponerla fue el
+    `ReferenceError` que cerró el PR #675. La playa no convoca (su botón sigue abriendo solo):
+    es un banco de pruebas del motor de exteriores, no contenido. La convocatoria viaja por un
+    **ajuste de mundo** (`scope: "world"`), no un socket crudo (#876): Foundry solo deja escribir
+    un ajuste de mundo a quien tiene permiso de modificar ajustes del juego (el GM), comprobado
+    por el servidor al escribir — la primera versión escuchaba el socket compartido sin acreditar
+    al emisor, y un jugador podía emitir el payload directamente.
     Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
     acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
     `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,
@@ -615,13 +739,46 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     donde no toca, y eso lo declara quien escribe el mapeo, no lo detecta el módulo.
     La **decisión de arte que bloqueaba la fase 4** ya se tomó (Eloy, 2026-08-20, en #603): avatares
     **todo escaneado** — PC, NPC, criaturas y estatuas son malla decimada con el mismo tratamiento, no
-    cajas. El primer consumidor real (`estatua-rig.mjs`, museo) se cableó en el PR #844 y su
-    cherry-pick limpio es el PR #882. Hasta que uno de los dos entre en `main`, `rig-esqueleto.mjs`
-    sigue `declared-orphan` en `docs/orphan-declarations.json`; `retargeting-pose.mjs` nace igual de
-    huérfano porque su consumidor (dar `rig`+pose a una pieza real del catálogo, o un PC/NPC) es
-    contenido, no motor. Sigue fuera de alcance la reproducción de clips con interpolación.
-  - **Visor del piloto** — `scripts/visor-piloto.mjs` (geometría pura) y
-    `scripts/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
+    cajas. El primer consumidor real (`estatua-rig.mjs`, museo) entró por el PR #882, así que
+    `rig-esqueleto.mjs` ya no es huérfano; `retargeting-pose.mjs` sigue siéndolo porque su consumidor
+    (dar `rig`+pose a una pieza real del catálogo, o un PC/NPC) es contenido, no motor. Sigue fuera de
+    alcance la reproducción de clips con interpolación.
+    **Lo que la fase 4 midió**, y que hasta entonces nadie había comprobado: las tres fases se
+    probaban sobre el MISMO brazo sintético de doce vértices, y ninguna pieza del museo declara `rig`,
+    así que la rama que lo usa no se ejecutaba nunca. Sobre la Venus (448 vértices decimados, cadena
+    de cuatro huesos) la deformación aguanta —reposo idéntico a 4,4e-16, sin NaN, topología intacta y
+    la peor cara conserva el 56 % de su área a 20°—, y de paso salió el fallo que arregló el umbral de
+    `tools/pesar-despiezar.mjs`: ajustado a 0,05 contra aquel brazo, dejaba a un vértice del PIE con
+    un 7 % de influencia del pecho, así que los pies resbalaban 6 cm al inclinarlo 45°. Con 0,10 la
+    deriva es cero exacta y la pose se entrega mejor. **El museo no es el sitio de estrenar esto**:
+    una pieza escaneada exhibida en una postura que el original no tiene afirma «así era» de una
+    forma que la cartela no puede desmentir, que es contra lo que #598 puso el campo `naturaleza`, así
+    que el primer consumidor VISIBLE debe ser una figura que no pretenda ser un artefacto.
+    El **rig del avatar** (`scripts/avatar/avatar-rig.mjs`, #897) es ese camino empezando por donde no
+    cuesta: los avatares siguen siendo las cajas de #423 y el rig se usa solo para SITUAR, no para
+    deformar. Existía porque la cuenta de «dónde cae la mano» estaba escrita tres veces en
+    `cantina-avatar.mjs` (`manosDelGesto`, `distintivoDeClase`, `puntaDelCigarro` — que ya nació de
+    rescatar la copia que el humo y la brasa tenían por separado, #439), y el siguiente prop era la
+    cuarta. Se usa el rig de #603 y no un contrato de anclajes aparte porque **la jerarquía ya estaba
+    en el cuerpo** y `posicionesDeHuesos` dice en su propia documentación que sirve para «colgar cosas
+    de un hueso»: un catálogo de puntos escritos a mano sería una segunda forma de decir lo mismo, que
+    es de donde salió el problema. Tres consecuencias que no son extras: un ancla trae **orientación**
+    (la dirección de su padre a él), un **gesto es una pose parcial** sobre el reposo y no una lista
+    de posiciones absolutas —«quieto» es la pose vacía—, y el **rumbo es un giro del hueso raíz**. Y el rumbo
+    **ya se aplica** (#897): `escena-primitivas.cajaGirada` rota los ocho vértices sobre el centro de
+    la caja, así que el cuerpo de cada jugador mira a donde va. Eso cierra la limitación que
+    `nave-avatares-render.mjs` declaraba y aparcaba —«girar exigiría rotar la malla entera por
+    vértice»—, que resultó costar dos multiplicaciones por vértice: lo que faltaba no era el cálculo
+    sino dónde ponerlo. El dato tampoco era nuevo: `yaw` viaja en la muestra de red desde #453,
+    `nave-movimiento-red.mjs` lo interpola con cuidado de ángulos y llegaba hasta el render dentro de
+    cada jugador, que lo descartaba en la última línea. Mismo convenio en toda la cadena —`yaw = 0`
+    mira a +z, avance `(sen yaw, cos yaw)`, igual que `moverXZ`—, así que no se invierte ningún signo.
+    Los avatares SENTADOS de la cantina siguen sin girar y ahí sigue estando bien: están colocados de
+    cara a la barra a propósito (`SITIOS`). La frontera con `cantina-avatar.mjs` es
+    estricta y evita el ciclo: allí se sabe QUIÉN es alguien (raza, silueta, las tablas del SRD) y se
+    entregan MEDIDAS (`medidasDeAvatar`); el rig no conoce ni una raza.
+  - **Visor del piloto** — `scripts/visor-piloto/visor-piloto.mjs` (geometría pura) y
+    `scripts/visor-piloto/visor-piloto-lienzo.mjs` (el <canvas>), #362. Lo que la nave tiene delante, en PSX,
     en la consola de pilotaje. Es la primera superficie 3D del módulo que **informa** en vez de
     ambientar, y de ahí sus tres reglas: la distancia y la marcación siguen en **texto** —el
     visor es refuerzo y va `aria-hidden`, y pilotaje arma la lista de contactos desde la misma

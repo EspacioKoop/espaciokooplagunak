@@ -940,7 +940,13 @@ export function crearSalaCaja({
       ...focosCercanos(focosLuminariasCamara, [0, 0, 0], hueco),
     ];
 
-    const partes = [...piezas, ...difusor, ...haz, ...motas, ...hojasPuertas, ...vistaVentanas].map(({ malla, color, emisivo, textura, ambiente, alpha }) =>
+    // El marcador emite (`emisivo: true`) por el mismo motivo que el difusor de
+    // una luminaria: es una señal, no una superficie que reciba sombreado por
+    // normal — si se apagara, se leería como un bulto más y no como el
+    // resultado de una tirada.
+    const marcadorPieza = marcador ? [{ malla: marcador.malla, color: marcador.color, emisivo: true }] : [];
+
+    const partes = [...piezas, ...difusor, ...haz, ...motas, ...hojasPuertas, ...vistaVentanas, ...marcadorPieza].map(({ malla, color, emisivo, textura, ambiente, alpha }) =>
       componerEscena(trasladarMalla(malla, [-camara[0], -camara[1], -camara[2]]), {
         ancho: anchoLienzo,
         alto: altoLienzo,

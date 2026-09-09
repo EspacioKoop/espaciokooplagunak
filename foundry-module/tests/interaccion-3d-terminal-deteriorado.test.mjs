@@ -44,6 +44,23 @@ test("un fallo raso no cambia nada observable en la sala", () => {
   assert.equal(resultado.efecto, null);
 });
 
+test("efecto desconocido no convierte el estado serializable en una propiedad heredada", () => {
+  for (const tipo of ["constructor", "__proto__", "toString", "desconocido"]) {
+    const sala = { terminal: ESTADOS_TERMINAL.PARCIAL, id: "sala-1" };
+    assert.deepEqual(aplicarResultadoTerminal(sala, { efecto: { tipo } }), sala);
+  }
+});
+
+test("el contrato completo es determinista y preserva el estado fuente", () => {
+  const entrada = { objeto: TERMINAL_DETERIORADO, aproximacionId: "forzar-el-panel", tirada: 0.1 };
+  const sala = Object.freeze({ terminal: ESTADOS_TERMINAL.ORIGINAL });
+  const a = resolverInteraccion(entrada);
+  const b = resolverInteraccion(entrada);
+  assert.deepEqual(a, b);
+  assert.deepEqual(aplicarResultadoTerminal(sala, a), aplicarResultadoTerminal(sala, b));
+  assert.equal(sala.terminal, ESTADOS_TERMINAL.ORIGINAL);
+});
+
 test("aplicarResultadoTerminal observa las tres transiciones del terminal", () => {
   const salaInicial = Object.freeze({ id: "sala-1", terminal: ESTADOS_TERMINAL.ORIGINAL });
 

@@ -59,6 +59,8 @@ export function aplicarResultadoTerminal(estadoSala = {}, resultado) {
   const efecto = resultado?.efecto ?? null;
   if (!efecto) return { ...estadoSala, terminal: estadoSala.terminal ?? ESTADOS_TERMINAL.ORIGINAL };
 
-  const siguienteEstado = ESTADO_POR_TIPO_EFECTO[efecto.tipo] ?? estadoSala.terminal ?? ESTADOS_TERMINAL.ORIGINAL;
+  const siguienteEstado = Object.hasOwn(ESTADO_POR_TIPO_EFECTO, efecto.tipo)
+    ? ESTADO_POR_TIPO_EFECTO[efecto.tipo]
+    : estadoSala.terminal ?? ESTADOS_TERMINAL.ORIGINAL;
   return { ...estadoSala, terminal: siguienteEstado };
 }

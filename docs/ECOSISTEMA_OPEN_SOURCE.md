@@ -142,5 +142,4 @@ entrada: fue una buena decisión antes de tener a quién aplicársela.
 
 - **[INSPIRACION_JUEGOS_LIBRES.md](INSPIRACION_JUEGOS_LIBRES.md) (issue [#840](https://github.com/EspacioKoop/espaciokooplagunak/issues/840)):** estudia *qué mecánica de rol robar* de juegos libres, no de qué dependencias traer. Es el complemento de este documento: aquí se decide **de qué depender**; allí se decide **qué idea reutilizar** (sin tocar código ajeno, por la frontera #568).
 
-- **[INSPIRACION_JUEGOS_LIBRES.md](INSPIRACION_JUEGOS_LIBRES.md) (issue [#840](https://github.com/VaroTv7/espaciokooplagunak/issues/840)):** estudia *qué mecánica de rol robar* de juegos libres, no de qué dependencias traer. Es el complemento de este documento: aquí se decide **de qué depender**; allí se decide **qué idea reutilizar** (sin tocar código ajeno, por la frontera #568).
-- **[EXTERNAL_TOOLS_RESEARCH_885.md](EXTERNAL_TOOLS_RESEARCH_885.md) (issue [#885](https://github.com/VaroTv7/espaciokooplagunak/issues/885)):** evalúa herramientas externas de mapas, textos y assets para uso como inspiración procedural en Espaciokoop.
+- **[EXTERNAL_TOOLS_RESEARCH_885.md](EXTERNAL_TOOLS_RESEARCH_885.md) (issue [#885](https://github.com/EspacioKoop/espaciokooplagunak/issues/885)):** evalúa herramientas externas de mapas, textos y assets para uso como inspiración procedural en Espaciokoop.

@@ -5,7 +5,7 @@ Returns JSON objects with id/title/author/topic/summary suitable for
 NPC backstories, encounter flavor, or prompt seeds.
 
 Usage:
-    python tools/gutendex_seeds.py --topic fairy tales --limit 10
+    python tools/gutendex_seeds.py --topic 'fairy tales' --limit 10
     python tools/gutendex_seeds.py --topic adventure --limit 10
     python tools/gutendex_seeds.py --list-topics
 """
@@ -25,16 +25,20 @@ BASE = "https://gutendex.com/books"
 
 
 def fetch_books(topic: str, limit: int = 32) -> list[dict]:
+    """Return at most limit candidates from one page, not a rights clearance."""
+    if type(limit) is not int or not 1 <= limit <= 32:
+        raise ValueError("limit must be an integer from 1 to 32")
     if requests is None:
-        print(json.dumps({"error": "requests not available"}, ensure_ascii=False))
-        return []
-    params = {"topic": topic, "languages": "en", "limit": str(limit)}
+        raise RuntimeError("requests not available")
+    params = {"topic": topic, "languages": "en", "copyright": "false"}
     url = f"{BASE}?{urlencode(params)}"
     r = requests.get(url, timeout=30)
     r.raise_for_status()
     data = r.json()
     seeds = []
     for b in data.get("results", []):
+        if b.get("copyright") is not False:
+            continue
         author = ""
         if b.get("authors"):
             author = b["authors"][0].get("name", "")
@@ -48,6 +52,8 @@ def fetch_books(topic: str, limit: int = 32) -> list[dict]:
             "gutenberg_url": f"https://www.gutenberg.org/ebooks/{b.get('id')}" if b.get("id") else "",
             "summary": (b.get("summaries") or [""])[0],
         })
+        if len(seeds) >= limit:
+            break
     return seeds
 
 
@@ -69,7 +75,13 @@ def main() -> int:
     if not args.topic:
         ap.error("--topic is required unless --list-topics is used")
 
-    seeds = fetch_books(args.topic, args.limit)
+    if not 1 <= args.limit <= 32:
+        ap.error("--limit must be from 1 to 32")
+    try:
+        seeds = fetch_books(args.topic, args.limit)
+    except Exception as exc:
+        print(f"Gutendex request failed: {exc}", file=sys.stderr)
+        return 1
     print(json.dumps(seeds, ensure_ascii=False, indent=2))
     return 0
 

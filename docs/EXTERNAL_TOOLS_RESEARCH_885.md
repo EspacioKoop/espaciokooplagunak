@@ -1,6 +1,6 @@
 # docs/research: herramientas de mapas/compendios/open-content para standalone (mipui, deepnight, donjon, thievesguild, dungen, laterpress)
 
-Issue: [#885](https://github.com/VaroTv7/espaciokooplagunak/issues/885)
+Issue: [#885](https://github.com/EspacioKoop/espaciokooplagunak/issues/885)
 
 ## Resumen ejecutivo
 
@@ -17,8 +17,8 @@ Se evaluaron seis herramientas/repositorios de uso frecuente en mazmorreo y worl
 | **Mipui** | https://www.mipui.net/ | El software es **MIT**. Su documentación confirma MIT y el sitio permite uso comercial de mapas creados con Mipui, aunque los token images pueden ser CC-BY y los forks de mapas pueden generar obras derivadas. ([GitHub](https://github.com/amishne/mipui)) | **P1 — Adaptador/importador** |
 | **Deepnight RPG Map** | https://deepnight.net/tools/rpg-map/ | Las fuentes oficiales actuales no me dan base suficiente para afirmar una licencia open-source permisiva del producto. Deepnight mantiene copyright propio. ([Deepnight Games](https://deepnight.net/tools/anamap/)) | **Referencia, no port** |
 | **donjon** | https://donjon.bin.sh/d20/dungeon/ | **Código propietario** (© 2009-2026 drow); parte del contenido D&D 3.5 usa OGL. No existe licencia abierta del código. ([Fuente oficial](https://donjon.bin.sh/license.html)) | **Referencia/interoperabilidad muy condicionada; no copiar código** |
-| **The Thieves Guild** | https://www.thievesguild.cc/harvest/ | Sus términos reservan el copyright del servicio, software y contenido, limitando el uso y prohibiendo copiar/adaptar software y automatizar/scrapear el servicio. ([Thieves Guild](https://www.thievesguild.cc/terms)) | **Descartar como fuente de port/datos** |
-| **DunGen** | https://dungen.app/dungen/ | Sus ToS conceden uso personal/no comercial de la web/materiales y separan explícitamente la licencia comercial del contenido generado. ([DunGen](https://dungen.app/tos/)) | **No usar como runtime/integración** |
+| **The Thieves Guild** | https://www.thievesguild.cc/harvest/ | No se pudieron verificar sus términos directamente; se conserva el descarte prudente, no una prohibición jurídica acreditada. ([Thieves Guild](https://www.thievesguild.cc/terms)) | **Descartar como fuente de port/datos** |
+| **DunGen** | https://dungen.app/dungen/ | Sus ToS conceden uso personal/no comercial de la web/materiales y remiten a contactar con el autor para una licencia comercial; no hay una concesión específica acreditada para contenido generado. ([DunGen](https://dungen.app/tos/)) | **No usar como runtime/integración** |
 | **Laterpress** | https://www.laterpress.com/public-domain-books/ | La colección ofrece libros de dominio público procedentes de Project Gutenberg y Standard Ebooks, pero Laterpress es un servicio propietario y sus términos restringen scraping y protegen su contenido/código. ([Laterpress](https://www.laterpress.com/public-domain-books)) | **Solo descubrimiento; ir a la fuente original** |
 
 ---
@@ -64,7 +64,7 @@ Eso evitará exactamente los problemas de copyright que hemos encontrado en los 
 El objetivo no es redistribuir estos recursos, sino usarlos como **semillas** para generadores propios de NPCs, encuentros, backstories, flavor text y catálogos de atmósferas.
 
 ### Textos: Gutendex + Project Gutenberg
-Uso permitido: filtrar por `copyright=false` en Gutendex y derivar a `gutenberg.org/ebooks/<id>` para consulta local o generación de prompts. No copiar texto tal cual.
+Candidatos, no autorización de uso: `tools/gutendex_seeds.py` consulta una sola página (hasta 32 resultados) con `copyright=false`, exige además el booleano `False` en cada entrada y aplica un límite local entre 1 y 32. Puede devolver menos resultados. Los fallos de red/dependencia terminan con error, no con una lista vacía de éxito. El indicador se refiere a EE. UU.; verificar la edición y la jurisdicción antes de usar texto o resúmenes. Fuente: https://gutendex.com/ .
 
 Temas útiles y selección manual recomendada:
 
@@ -80,10 +80,10 @@ Temas útiles y selección manual recomendada:
 Regla: solo incluir una semilla en el generador si `gutenberg.org/ebooks/<id>` la marca como public domain en EE.UU.
 
 ### Catálogo visual: ShareTextures
-Uso permitido: **diccionario de atmósferas**, no banco de assets redistribuibles.
+Propuesta: **diccionario de atmósferas**, no banco de assets redistribuibles. `tools/sharetextures_categories.py` extrae candidatos de texto visible, no acredita que cada uno sea una categoría. Su fallback es una lista estática, no datos recién obtenidos. No se ha verificado aquí una autorización específica de automatización. Fuente de condiciones: https://www.sharetextures.com/p/license .
 
 - Licencia: custom CC0-based, pero prohibe redistribución, hotlinking, embeddings automáticos y uso en plugins/colecciones sin permiso escrito.
-- Forma segura: extraer **nombres de categorías y atmósferas** (ej. `marble`, `plaster`, `lava`, `leather`, `iron`) para armar tablas de encuentros o descripciones de locales: *"la taberna tiene mostrador de mármol y suelo de yeso"*.
+- Uso propuesto, pendiente de condiciones de automatización: extraer **nombres de categorías y atmósferas** (ej. `marble`, `plaster`, `lava`, `leather`, `iron`) para armar tablas de encuentros o descripciones de locales: *"la taberna tiene mostrador de mármol y suelo de yeso"*.
 - No descargues ni incluyas las texturas en el repo; cita como fuente de inspiración en `docs/FUENTES_EXTERNAS.md`.
 
 ### Public Domain Review
@@ -93,7 +93,8 @@ Uso permitido: **referencia de flavor/atlas**. La curación es valiosa, pero im�
 
 ## Criterio de cierre
 
-- [x] 6 herramientas evaluadas con licencia verificada en fuente oficial.
+- [ ] 6 licencias verificadas: The Thieves Guild sigue sin verificación directa.
+- Matriz complementaria y correcciones ya integradas: [HERRAMIENTAS_MAPAS_ATLAS.md](HERRAMIENTAS_MAPAS_ATLAS.md). Esta entrega usa Refs #885, no certifica su cierre.
 - [x] 6 propuestas concretas de integración/no integración.
 - [x] Decisión priorizada.
 - [x] Uso como inspiración para generación procedural definido para textos y texturas.

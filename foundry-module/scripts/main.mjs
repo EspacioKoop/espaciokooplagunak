@@ -139,6 +139,10 @@ import {
 } from "./arte/audio/musica-mando.mjs";
 import { crearReproductor } from "./arte/audio/musica-reproductor.mjs";
 import { crearGrupo } from "./control-escena.mjs";
+import {
+  addImportadorAtlasControl,
+  registrarImportadorAtlas,
+} from "./atlas-importar-ventana.mjs";
 
 registerStationFeature(MODULE_ID);
 registerAvatarFeature(MODULE_ID);
@@ -146,6 +150,7 @@ registerWorkspaceFeature(MODULE_ID);
 registerBridgeTokenFeature(MODULE_ID);
 registrarContenidoExterno(MODULE_ID);
 registrarSonidoFreesound(MODULE_ID);
+registrarImportadorAtlas(MODULE_ID);
 
 // Consola caliente del GM (#276): fusión de estado+mapa+encuentros+
 // previsualización con un solo bucle. Una sola ventana, V1 (Application,
@@ -942,6 +947,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // Y el diagnóstico de contenido importado, que sí es solo del GM: enseña el
   // estado del MUNDO del anfitrión, no información de partida.
   addContenidoExternoControl(controls);
+  addImportadorAtlasControl(controls);
   // Y el de echar una mano, que ve TODA la tripulación: ayudar es cruzar de
   // puesto por definición, y un botón solo-GM no sería cooperación.
   addAsistenciaControl(controls);

@@ -587,10 +587,15 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     es sobre el catálogo, no en la ventana que la aplica.
   - **Catálogos con procedencia, y el museo** — `scripts/procedencia-catalogo.mjs` es la ÚNICA
     regla de licencia del módulo (#598): qué es una procedencia aceptable, con errores tipados por
-    `code` + `path`. La consumen el atlas (`catalogo-cosmografico.mjs`, #525, que sigue siendo
-    cimiento sin cablear a la espera de #213) y el catálogo de piezas (`catalogo-piezas.mjs`), y esa
-    unificación es el punto: dos validadores de licencia se desincronizan, y una licencia
-    desincronizada no es un fallo de forma. `catalogo-piezas.mjs` es lo que faltaba para unir las dos
+    `code` + `path`. La consumen el atlas (`catalogo-cosmografico.mjs`, #525) y el catálogo de
+    piezas (`catalogo-piezas.mjs`), y esa unificación es el punto: dos validadores de licencia se
+    desincronizan, y una licencia desincronizada no es un fallo de forma. El atlas **ya no es
+    cimiento** (#634): `importador-atlas.mjs` une la cadena —`atlas-hyg.mjs` adapta el catálogo
+    estelar HYG al formato y `catalogo-cosmografico.mjs` lo valida— y `atlas-importar-ventana.mjs`
+    le da la entrada standalone solo-GM desde la que se importa. Lo cableado es la MAQUINARIA y no
+    el contenido: la ventana importa lo que el GM le dé, así que no mete en la partida ninguna
+    decisión de #213, que sigue siendo una investigación abierta sobre QUÉ atlas.
+    `catalogo-piezas.mjs` es lo que faltaba para unir las dos
     mitades que #590 y #525 habían dejado sin hablarse — texto con procedencia por un lado, malla con
     procedencia por otro—: una ficha declara `malla`, y el validador exige que ese ID exista de
     verdad (el registro se le pasa desde fuera, así que sigue siendo puro). Su campo `naturaleza`
@@ -598,7 +603,13 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     metadato: es lo que impide que una cartela diga «así era» de una pieza que es una reconstrucción
     hecha después de que destruyeran el original, o que llame mármol a un vaciado en yeso. El crédito
     de la cartela se **deriva** de la procedencia y no se escribe al lado, misma regla que el cartel
-    de reglas del blackjack (#553). La **sala del museo** (`scripts/museo-escena.mjs` +
+    de reglas del blackjack (#553). Resolver un id de pieza tiene **una sola puerta**
+    (#598): cada catálogo se registra con `registrarCatalogoPiezas` al importarse y quien pinta una
+    cartela pregunta por `getPiezaCatalogada(id)`, sin saber en qué sala vive la pieza. Son ya tres
+    —esculturas, cuadros de la pared (#836) y pasillo de los recuerdos— y con la cascada explícita
+    que había antes, cada consumidor nuevo tenía que acordarse de añadir el suyo; el registro falla
+    en cambio ante un id duplicado entre catálogos, que es lo que dejaría a un consumidor
+    resolviendo la pieza equivocada. La **sala del museo** (`scripts/museo-escena.mjs` +
     `museo-piezas.mjs`, con `MUSEO` en `paleta.mjs`) es su primer consumidor real: tres piezas sobre
     pedestales, andable, solo-GM, con la entrada por herramienta de la barra de escena y la salida
     por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el

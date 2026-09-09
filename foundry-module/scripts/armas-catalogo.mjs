@@ -18,10 +18,12 @@ export const ARMAS_POR_CLASE = deepFreeze({
   barbaro: {
     nombre: "Hacha de batalla",
     piezas: [
-      // mango
-      { nombre: "Mango", color: AVATAR.acero, centro: [0, 0.15, 0], medidas: [0.09, 0.3, 0.09] },
-      // hoja
-      { nombre: "Hoja", color: AVATAR.acero, centro: [0, 0.9, 0], medidas: [0.09, 1.2, 0.09] },
+      // Asta continua hasta la cabeza; la hoja sobresale a un solo lado.
+      // La silueta, no sólo el material, la distingue de espada y báculo.
+      { nombre: "Mango", color: AVATAR.madera, centro: [0, 0.475, 0], medidas: [0.09, 0.95, 0.09] },
+      { nombre: "Hoja", color: AVATAR.acero, centro: [0.15, 0.95, 0], medidas: [0.4, 0.24, 0.08] },
+      // Filo más alto y fino: perfil escalonado de hacha sin salir de cajas.
+      { nombre: "Filo", color: AVATAR.acero, centro: [0.35, 0.95, 0], medidas: [0.12, 0.4, 0.045] },
     ],
   },
   bardo: {

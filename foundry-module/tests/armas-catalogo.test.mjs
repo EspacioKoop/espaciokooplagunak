@@ -35,10 +35,42 @@ describe("armas-catalogo", () => {
     }
   });
 
+  it("el hacha tiene hoja lateral ancha y corta, unida al extremo del mango", () => {
+    const [mango, hoja] = ARMAS_POR_CLASE.barbaro.piezas;
+    assert.ok(hoja.medidas[0] >= mango.medidas[0] * 4, "no otra vara como la espada");
+    assert.ok(hoja.medidas[0] > hoja.medidas[1], "hoja ancha, no una lámina vertical");
+    assert.ok(hoja.medidas[1] < mango.medidas[1] / 2, "cabeza concentrada en el extremo");
+    assert.ok(hoja.centro[0] > mango.centro[0], "silueta lateral, no espada simétrica");
+    const max = (p, axis) => p.centro[axis] + p.medidas[axis] / 2;
+    const min = (p, axis) => p.centro[axis] - p.medidas[axis] / 2;
+    for (const axis of [0, 1, 2]) {
+      assert.ok(min(hoja, axis) <= max(mango, axis) && min(mango, axis) <= max(hoja, axis),
+        "hoja flotante sin contacto con el mango");
+    }
+    assert.ok(min(hoja, 1) >= min(mango, 1) + mango.medidas[1] * 0.7);
+    const geometry = clase => ARMAS_POR_CLASE[clase].piezas.map(({ centro, medidas }) => ({ centro, medidas }));
+    for (const clase of ["guerrero", "paladin", "druida"]) {
+      assert.notDeepEqual(geometry("barbaro"), geometry(clase), "no basta cambiar nombre/color");
+    }
+  });
+
   it("cada arma tiene al menos 2 piezas", () => {
     for (const [clase, arma] of Object.entries(ARMAS_POR_CLASE)) {
       assert.ok(Array.isArray(arma.piezas), `${clase}: piezas no es array`);
       assert.ok(arma.piezas.length >= 2, `${clase}: tiene ${arma.piezas.length} piezas, se esperan >=2`);
+    }
+  });
+
+  it("el filo del hacha no flota y todas sus cajas tienen volumen finito", () => {
+    const piezas = piezasArma("barbaro", [-3, 2, 7]);
+    for (let i = 0; i < piezas.length; i++) {
+      const p = piezas[i];
+      assert.ok(p.centro.every(Number.isFinite));
+      assert.ok(p.medidas.every(n => Number.isFinite(n) && n > 0));
+      if (i === 0) continue;
+      assert.ok(piezas.slice(0, i).some(q => p.centro.every((v, axis) =>
+        Math.abs(v - q.centro[axis]) <= (p.medidas[axis] + q.medidas[axis]) / 2)),
+      "cada pieza nueva toca al menos una pieza anterior");
     }
   });
 

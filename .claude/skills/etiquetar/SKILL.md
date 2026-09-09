@@ -25,7 +25,7 @@ obligatorios**; el resto solo si aportan.
 | **Lenguaje** (opcional) | `javascript` `python` `cpp` `lua` `github_actions` `docker` | Solo si ayuda a filtrar trabajo mecánico (dependencias, formato, migraciones). El área ya dice casi siempre el lenguaje: `area:bridge` es Python. No lo repitas por costumbre. |
 | **Materia** (opcional) | `i18n` `arte` `codigo-huerfano` | Temas que cruzan áreas y que la gente busca por sí mismos. `codigo-huerfano` es código mergeado que nada llama o trabajo terminado sin entregar — el patrón de #653, #634, #667. |
 | **Dimensión AECF** (opcional) | `seguridad` `Accesibilidad` `Calidad` `AECF` `Compatibilidad` | Solo si el issue mueve una práctica de `docs/BASELINE.md`. `seguridad` es de las pocas que se lee de verdad: no la gastes en "esto sería más robusto". |
-| **Estado / fase** (opcional) | `Fase 0`–`Fase 5` `triage` `bloqueado` `main-roto` `Betatesting` `automation` | `Fase N` solo si el roadmap del `README.md` lo sitúa ahí. `main-roto` va antes que nada y es efímera: se quita al arreglar. |
+| **Estado** (opcional) | `triage` `bloqueado` `main-roto` `Betatesting` `automation` | Consultar las etiquetas vivas. La fase se representa únicamente mediante milestone cuando bloquea su criterio de salida; no recrear etiquetas de fase. `main-roto` es efímera: se quita al arreglar. |
 
 ## Etiquetar un issue o PR
 
@@ -39,7 +39,7 @@ convencional (`feat(core/persist): …`), y ese prefijo **da el área directamen
 `scenario` → `area:escenarios`, `docs` → `documentation`, `chore(repo)` → `Coordinación`.
 
 ```bash
-gh issue edit <n> --add-label "area:foundry,enhancement,Fase 3"
+gh issue edit <n> --add-label "area:foundry,enhancement"
 ```
 
 Para una tanda, comprueba primero **qué queda sin etiquetar**, que es donde está el
@@ -54,32 +54,16 @@ gh issue list --state open --limit 400 --json number,title,labels \
 etiquetar: el segundo aparece en la lista de arriba, el primero desaparece de todas
 las búsquedas por parecer ya clasificado.
 
-## Milestones: se derivan, no se deciden aquí
+## Milestones: solo bloqueos del criterio de salida
 
-**El milestone es la etiqueta `Fase N`.** No son dos clasificaciones: son la misma, y
-tenerlas separadas es cómo se desincronizan. Al etiquetar con una fase, pon el
-milestone en el mismo gesto:
+Aplicar `AGENTS.md` y `docs/ROADMAP_PRODUCTO.md`: un issue lleva milestone solo
+si bloquea un criterio de salida escrito de esa fase. Trabajo transversal,
+investigación y mejoras que no cierran una puerta van sin milestone.
 
-```bash
-for f in 3 4 5; do
-  gh issue list --state open --limit 400 --label "Fase $f" --json number,milestone \
-    --jq '.[]|select(.milestone==null)|.number' | while read n; do
-    [ -n "$n" ] && gh issue edit "$n" --milestone "Fase $f"
-  done
-done
-```
-
-Y comprueba que ninguno diga dos cosas a la vez:
-
-```bash
-gh issue list --state open --limit 400 --json number,labels,milestone \
-  --jq '.[]|select(.milestone!=null)|select((.labels|map(.name)|map(select(startswith("Fase")))|first) != null and (.labels|map(.name)|map(select(startswith("Fase")))|first) != .milestone.title)|"#\(.number)"'
-```
-
-**Lo que NO se automatiza es poner fase a un issue que no la tiene.** En qué fase cae
-un trabajo lo dice el roadmap del `README.md`, y es una decisión de producto: adivinarla
-desde el título llena los milestones de basura plausible. Un issue sin fase se queda sin
-milestone y aparece en la lista de pendientes, que es donde tiene que estar.
+No existen etiquetas `Fase N`: no crearlas ni derivar hitos desde etiquetas o
+el título del issue. Consultar primero el alcance y los hitos vivos. Clasificar
+etiquetas no autoriza cambiar hitos; cualquier asignación debe estar justificada
+por el criterio de salida y el alcance encargado.
 
 ## Auditar la taxonomía
 

@@ -79,24 +79,15 @@ pidiendo cinco cosas a la vez.
 
 ## Comprobarlo antes de crearla
 
-```bash
-cd ~/.hermes/bin && python3 - <<'PY'
-import importlib.util,sys
-sp=importlib.util.spec_from_file_location("kp","kanban-portero.py")
-m=importlib.util.module_from_spec(sp); sys.argv=["kp","--dry-run"]
-try: sp.loader.exec_module(m)
-except SystemExit: pass
-t="<título>"; c=open("<fichero.md>",encoding="utf-8").read()
-cr=m.CRITERIO.search(c); e=m.ENTREGABLE.search(c)
-print("metrica:",m.objetivo_es_metrica(t,c)[0],
-      "| criterio:",bool(cr) and m.ejecutable(cr.group(1))[0],
-      "| entregable:",bool(e and m.RUTA.findall(e.group(1))))
-PY
-```
+Comprobar que el encargo contiene un comportamiento, un caso positivo y uno
+negativo, un criterio ejecutable y un entregable concreto. Ejecutar las pruebas
+citadas en un árbol autorizado antes de describirlas como verificadas.
 
-Crear:
+Si se utiliza un tablero externo, consultar su documentación vigente y el
+procedimiento privado autorizado para la versión instalada. Los identificadores
+de proyecto, cuenta y agente se obtienen allí; no se versionan en este repositorio.
+No asumir una CLI ni depender de scripts domésticos no distribuidos.
 
-```bash
-hermes kanban create "<título>" --body "$(cat tarjeta.md)" \
-  --assignee lagunakpeon4 --project p_63241b3a --workspace worktree --goal
-```
+Crear o asignar la tarjeta solo dentro del alcance encargado. La norma de
+`docs/NORMA_PLATINO_COLABORACION.md` exige terminar la cola existente antes de
+abrir frentes nuevos; esta receta no concede autorización autónoma adicional.

@@ -19,9 +19,9 @@ cerrado.
 Y **el diff no lo delata**: un `.po` reescrito parece reflujo de líneas largas.
 `+124 −1939` no dice «he borrado el diálogo del escenario». Por eso cuentas.
 
-Tu trabajo ahorra la única cosa escasa de este proyecto: una revisión humana. Solo una
-persona puede aprobar en `main`, así que un PR roto que llega a GitHub cuesta más que
-uno que nunca se abrió.
+Tu trabajo ahorra revisión humana sin sustituirla donde el riesgo la exige.
+La integración sigue `docs/NORMA_PLATINO_COLABORACION.md`: revisión proporcional,
+checks y conversaciones resueltas, sin una firma externa obligatoria por rutina.
 
 ## Qué compruebas, en este orden
 
@@ -48,8 +48,8 @@ sabes que está rota.
 6. **Declaraciones con procedencia real**, si toca `docs/orphan-*.json`: motivos que no se
    repitan y evidencias que no sean el mismo enlace copiado.
 
-Cuando exista, ejecuta también `~/.hermes/bin/criterio-mecanico.sh` sobre un worktree
-temporal de la rama: es el mismo suelo, ya escrito.
+Ejecuta los verificadores versionados pertinentes y documentados en `AGENTS.md`
+sobre un worktree temporal. No dependas de herramientas privadas de otra instalación.
 
 ## Cómo informas
 

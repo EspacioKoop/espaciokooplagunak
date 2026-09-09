@@ -70,6 +70,10 @@ vigilaba.
 
 ## 7. Quién aprueba
 
-`main` exige revisión de code owner y **GitHub no cuenta al autor**. Si los abre todos la
-misma cuenta, esa cuenta no puede firmar ninguno. Un `mergeStateStatus: CLEAN` con CI
-verde puede seguir parado en `REVIEW_REQUIRED`.
+Aplicar `docs/NORMA_PLATINO_COLABORACION.md` y consultar las protecciones vivas.
+No se exige una firma ajena por rutina para cambios ordinarios acotados y probados,
+también en PR propios; GitHub no permite autoaprobarlos. Los cambios de riesgo sí
+requieren revisión independiente. Una solicitud de cambios se resuelve con evidencia
+sobre sus hallazgos, nunca ignorándola ni alterando las protecciones para integrar.
+Conservar checks obligatorios y conversaciones resueltas; no restaurar una política
+anterior desde esta receta.

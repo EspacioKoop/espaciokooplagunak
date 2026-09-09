@@ -45,6 +45,7 @@ function abrirVisor3D() {
           width: 760,
           height: 560,
           resizable: true,
+          template: "modules/espaciokoop-lagunak/templates/visor-3d-sistema.hbs",
         });
       }
 

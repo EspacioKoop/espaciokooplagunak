@@ -33,11 +33,14 @@ function crearContenidoFalso() {
 // inspeccionarlo desde el test.
 function crearApplicationV1Diferida(contenidos) {
   return class ApplicationV1Diferida {
-    constructor() {
+    constructor(options) {
+      this.options = options;
       this.element = null;
     }
 
     render(force, options) {
+      assert.equal(force, true, "una instancia V1 recibe booleano incluso en host moderno");
+      assert.equal(this.options.template, "modules/espaciokoop-lagunak/templates/visor-3d-sistema.hbs");
       Promise.resolve().then(() => {
         const content = crearContenidoFalso();
         contenidos.push(content);

@@ -31,6 +31,18 @@
  * usaban los tres módulos; este archivo los reúne, no los rediseña.
  */
 
+/** Colores del prototipo de tarjetas (#1030), sin cambiar su apariencia. */
+export const CARTA_COMBATIENTE = Object.freeze({
+  humano: Object.freeze({ marco: "#c9b48a", acento: "#f0e4c4" }),
+  elfo: Object.freeze({ marco: "#8fa3d9", acento: "#d8f3dc" }),
+  enano: Object.freeze({ marco: "#c8a24a", acento: "#ffe8a3" }),
+  agotamiento: "#ff8f9d",
+  fondo: "#141b33",
+  interior: "#0b0f18",
+  texto: "#f4e8c8",
+  bando: "#8fa3d9",
+});
+
 /** Lenguajes disponibles, para que un consumidor pueda declarar el suyo. */
 // Colores conservados del prototipo de turnos (#1012), centralizados sin
 // certificar su aceptación artística ni cambiar el resultado SVG.

@@ -348,6 +348,18 @@
         "type": "issue",
         "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1012"
       }
+    },
+    {
+      "module": "turno-cartas-modelo.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Modelo puro y serializable de tarjetas de #1030, consumido por la galería de diseño en tools pero todavía no por el módulo en caliente. El contrato excluye expresamente DOM/Foundry: la futura barra de iniciativa consumirá esta proyección del reducer de #1029 sin convertirse en otra fuente de verdad.",
+      "declaredBy": "OTACON Astra",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1030"
+      }
     }
   ],
   "artInventoryRationale": {
@@ -393,6 +405,7 @@
     "pasillo-guardiana.mjs",
     "pasillo-recuerdos-suelo.mjs",
     "pasillo-recuerdos-escena.mjs",
-    "turno-orden-baraja.mjs"
+    "turno-orden-baraja.mjs",
+    "turno-cartas-modelo.mjs"
   ]
 }

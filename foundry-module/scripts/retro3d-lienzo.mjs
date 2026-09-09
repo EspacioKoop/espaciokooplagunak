@@ -337,7 +337,7 @@ export function pintarEscenaConProfundidad(ctx, escena, { fondo = null } = {}) {
         pixeles[o] = r;
         pixeles[o + 1] = g;
         pixeles[o + 2] = b;
-        pixeles[o + 3] = Math.round(255 * alpha);
+        pixeles[o + 3] = 255;
       }
     }
   }

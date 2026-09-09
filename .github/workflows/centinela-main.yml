@@ -111,6 +111,15 @@ jobs:
             node --check "$file"
           done
 
+      - name: Instalar dependencias de tools/ (draco3d)
+        # La suite del módulo entra en tools/ por museo-escena.test.mjs y
+        # convertir-estatua.test.mjs, que acaban en normalizar-glb.mjs. Este
+        # paso FALTABA: el centinela corría la misma suite que foundry-module.yml
+        # sin la dependencia que aquel sí instalaba, así que main salía rojo con
+        # un ERR_MODULE_NOT_FOUND mientras la puerta del área salía verde (#1084).
+        working-directory: tools
+        run: npm ci
+
       - name: Tests del módulo Foundry
         id: modulo
         shell: bash

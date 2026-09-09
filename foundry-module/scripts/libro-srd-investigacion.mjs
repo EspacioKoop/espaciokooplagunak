@@ -5,6 +5,7 @@
 // El consumidor de escena puede pintar `marcadorInvestigacion` junto al libro.
 
 import { prisma } from "./escena-primitivas.mjs";
+import { INVESTIGACION_SRD } from "./paleta.mjs";
 
 export const HABILIDADES_INVESTIGACION = Object.freeze(["investigacion", "historia", "arcana"]);
 
@@ -20,16 +21,14 @@ export const PROCEDENCIA_SRD = Object.freeze({
   kind: "cc",
   source: "Wizards of the Coast — Systems Reference Document 5.1 (D&D 5e, 2014)",
   license: "CC-BY-4.0",
+  license_url: "https://creativecommons.org/licenses/by/4.0/",
   source_url: "https://www.dndbeyond.com/resources/1781-systems-reference-document-srd",
 });
 
 /** Texto legible de una línea, para UI/cartelas: mismo dato que `PROCEDENCIA_SRD`. */
 export const PROCEDENCIA_SRD_TEXTO = `${PROCEDENCIA_SRD.source} — ${PROCEDENCIA_SRD.license}`;
 
-const COLORES_RESULTADO = Object.freeze({
-  exito: "#8bd450",
-  fallo: "#d45050",
-});
+const COLORES_RESULTADO = INVESTIGACION_SRD;
 
 function validarHabilidad(habilidad) {
   if (!HABILIDADES_INVESTIGACION.includes(habilidad)) {

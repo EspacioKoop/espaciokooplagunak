@@ -101,31 +101,9 @@ export function validarCatalogoLibros(catalogo, { mallasDisponibles = null } = {
   return true;
 }
 
-/**
- * Catalogo de libros de ejemplo.
- * En un entorno real, este array se poblará con las obras deseadas.
- */
-export const libros = [
-  {
-    id: "libro-clasico-001",
-    nombre: {
-      es: "Don Quijote de la Mancha",
-      en: "Don Quixote of La Mancha",
-    },
-    cartela: {
-      es: "Edición ilustrada de dominio público, texto adaptado como mancha tipográfica.",
-      en: "Public domain illustrated edition, text adapted as typographic blot.",
-    },
-    naturaleza: "obra-propia",
-    malla: "libro-cerrado", // ID portable de la malla de referencia (estado cerrado).
-    provenance: {
-      kind: "cc",
-      source: "Project Gutenberg",
-      license: "CC0-1.0",
-      source_url: "https://www.gutenberg.org/ebooks/2000",
-    },
-  },
-];
+// Sin obras distribuidas: Gutenberg no acredita una dedicación CC0.
+// Añadir entradas solo con ficha de derechos verificada.
+export const libros = [];
 
 // Exportamos el objeto catalogo completo para facilitar su uso.
 export const catalogo = {

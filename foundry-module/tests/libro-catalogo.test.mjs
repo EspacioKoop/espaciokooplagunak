@@ -19,20 +19,20 @@ function libroValido() {
   return {
     id: "libro-clasico-001",
     nombre: {
-      es: "Don Quijote de la Mancha",
-      en: "Don Quixote of La Mancha",
+      es: "Libro sintético de prueba",
+      en: "Synthetic test book",
     },
     cartela: {
-      es: "Edición ilustrada de dominio público, texto adaptado como mancha tipográfica.",
-      en: "Public domain illustrated edition, text adapted as typographic blot.",
+      es: "Datos sintéticos para probar el esquema.",
+      en: "Synthetic schema test data.",
     },
     naturaleza: "obra-propia",
     malla: "libro-cerrado",
     provenance: {
       kind: "cc",
-      source: "Project Gutenberg",
+      source: "Fixture sintético: no acredita una obra externa",
       license: "CC0-1.0",
-      source_url: "https://www.gutenberg.org/ebooks/2000",
+      source_url: "https://example.invalid/test-license",
     },
   };
 }
@@ -54,6 +54,10 @@ function libroInvalidoMissingField() {
     // missing provenance
   };
 }
+
+test("no distribuye semillas con derechos sin verificar", () => {
+  assert.deepEqual(libros, []);
+});
 
 test("libro-catalogo.mjs exports the expected objects", () => {
   assert.ok(typeof validarCatalogoLibros === "function");

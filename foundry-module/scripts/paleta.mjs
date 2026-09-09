@@ -845,3 +845,6 @@ export const BOSQUE = Object.freeze({
   seco: "#8a7b52", // ramas muertas y helecho pasado: rompe el verde continuo
   tocon: "#6a563d", // el corte de un tronco caído, más claro que su corteza
 });
+
+// Señal efímera del libro SRD (#1037).
+export const INVESTIGACION_SRD = Object.freeze({ exito: "#8bd450", fallo: "#d45050" });

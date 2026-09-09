@@ -140,8 +140,8 @@ export function registrarConvocatoriaEstancia(moduleId, { abrir, hooks = globalT
 /**
  * Convoca a la mesa a una estancia y lo difunde. Solo el GM convoca; el módulo
  * puro es quien lo dice, y aquí solo se le pasa el rol. La difusión en sí
- * (escribir el ajuste de mundo) es una segunda barrera: aunque alguien
- * el guard cliente no es autoridad de servidor: Foundry comprueba el permiso
+ * (escribir el ajuste de mundo) es una segunda barrera. El guard cliente
+ * no es autoridad de servidor: Foundry comprueba el permiso
  * SETTINGS_MODIFY al persistir el ajuste de mundo.
  *
  * Quien convoca también abre la suya, pero no con una llamada aparte:

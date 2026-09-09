@@ -360,6 +360,18 @@
         "type": "issue",
         "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1030"
       }
+    },
+    {
+      "module": "contexto-convocatoria.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Catálogo narrativo de qué SIGNIFICA convocar a cada destino (playa = descanso, museo = briefing), entregado en #1077 como preparación parcial de #693. La convocatoria ya cableada resuelve el DESTINO desde CATALOGO_ANDAR y no necesita este dato: lo consumirá el cold open, que es la parte de #693 que aún no existe. Se declara en vez de cablearse para no abrir una segunda lista de destinos convocables junto a la del catálogo de andar.",
+      "declaredBy": "eGurucharri",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/693"
+      }
     }
   ],
   "artInventoryRationale": {

@@ -88,6 +88,7 @@ import { BOSQUE, FACCIONES, MUSEO, PLAYA } from "./paleta.mjs";
 import { caja, losa } from "./escena-primitivas.mjs";
 import { componerEscena, fundirEscenas, mezclar } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
+import { resolverVistaCombate, vistasDisponibles } from "./cambiador-vistas-combate.mjs";
 import { poligonosOtrosJugadores } from "./nave-avatares-render.mjs";
 import { crearPlanta } from "./nave-movimiento.mjs";
 import { colocarProp, mezclarVocabularios } from "./nave-props.mjs";
@@ -783,6 +784,15 @@ export const INTERACCIONES = declararInteracciones([
  * Misma firma que la `componer` de la playa y de `crearSalaCaja`, que es lo que
  * el bucle de andar espera.
  */
+/**
+ * Qué sabe proyectar esta superficie, para el conmutador de vistas (#1024).
+ *
+ * Se declara aquí, al lado del compositor que tendría que honrarlo, y el
+ * catálogo lo repite para la ventana: quien sabe si la cenital saldría en
+ * perspectiva es quien llama a `componerEscena`, no el catálogo.
+ */
+export const VISTAS_ARENA = Object.freeze({ ortografica: false });
+
 export function componerArena(x, y, z, yaw, opciones = {}) {
   const {
     ancho: anchoLienzo = 480,
@@ -797,8 +807,23 @@ export function componerArena(x, y, z, yaw, opciones = {}) {
   } = opciones;
   const cierre = cierreDe(idCierre);
   const segundos = Number.isFinite(tiempo) ? tiempo / 1000 : 0;
-  const { camara, dibujarPropio } = resolverCamara({ x, z, y, yaw, modo: modoCamara });
-  const yawCamara = -yaw;
+  // La cámara. Dos familias de modos conviven a propósito y no se funden:
+  // `primera`/`tercera` son los de andar por la nave (`nave-camara.mjs`), que es
+  // como se entra aquí y como se sale; las cuatro vistas de combate (#1024) son
+  // de esta arena y de ninguna otra estancia. Un nombre que no sea de combate
+  // cae a la cámara de andar, así que entrar sin elegir vista funciona igual
+  // que antes de #1024 — ni un píxel cambia hasta que alguien pulsa un número.
+  const vistas = vistasDisponibles(VISTAS_ARENA);
+  const esVistaDeCombate = vistas.includes(modoCamara);
+  const vista = esVistaDeCombate
+    ? resolverVistaCombate(modoCamara, { x, z, y, yaw }, vistas)
+    : resolverCamara({ x, z, y, yaw, modo: modoCamara });
+  const { camara, dibujarPropio } = vista;
+  const yawCamara = -(esVistaDeCombate ? vista.yaw : yaw);
+  // El motor inclina la cámara pero NO sabe proyectar en ortográfico, así que
+  // `vista.proyeccion` no se consume aquí: `vistasDisponibles` ya ha dejado
+  // fuera la única vista que lo pedía. Ver #1020.
+  const pitchCamara = esVistaDeCombate ? (vista.pitch ?? 0) : 0;
 
   // SIN LA CAPA DE COSTA. `piezasHorizonte` devuelve las tres del preset, y la
   // primera es una línea de mar: detrás de una arboleda eso es literalmente un
@@ -838,6 +863,7 @@ export function componerArena(x, y, z, yaw, opciones = {}) {
         color,
         posicion: [0, 0, 0],
         yaw: yawCamara,
+        pitch: pitchCamara,
         recorteLateral: true,
         luzFija: true,
         emisivo: emisivo === true,
@@ -856,6 +882,7 @@ export function componerArena(x, y, z, yaw, opciones = {}) {
   const poligonosJugadores = poligonosOtrosJugadores(cuerpos, {
     camara,
     yaw: yawCamara,
+    pitch: pitchCamara,
     ancho: anchoLienzo,
     alto: altoLienzo,
     epoca,

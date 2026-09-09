@@ -2,7 +2,7 @@ import { BridgeClient, BridgeError } from "./bridge-client.mjs";
 import { getBridgeToken } from "./bridge-token-session.mjs";
 import { openStationApp } from "./station-ui.mjs";
 import { buildWorkspaceModel, stationForWorkspace } from "./station-workspaces.mjs";
-import { normalizarBaseDatos } from "./base-datos-cientifica.mjs";
+import { normalizarBaseDatos } from "./atlas/base-datos-cientifica.mjs";
 import { emitWorkspaceOrder } from "./station-order-wiring.mjs";
 import { ORDER_FORMS } from "./station-order-forms.mjs";
 import {

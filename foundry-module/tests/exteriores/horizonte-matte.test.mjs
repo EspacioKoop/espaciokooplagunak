@@ -18,14 +18,14 @@ import {
   texturaDePng,
   texturaDeRejilla,
   texturasHorizonte,
-} from "../scripts/horizonte-matte.mjs";
-import { ficherosHorizonte } from "../scripts/horizonte-preset.mjs";
-import { codificarPngIndexado, decodificarPngIndexado } from "../scripts/png-indexado.mjs";
-import { texturaUtilizable, muestrearTextura } from "../scripts/retro3d-lienzo.mjs";
-import { componerPlaya } from "../scripts/playa-escena.mjs";
+} from "../../scripts/exteriores/horizonte-matte.mjs";
+import { ficherosHorizonte } from "../../scripts/exteriores/horizonte-preset.mjs";
+import { codificarPngIndexado, decodificarPngIndexado } from "../../scripts/png-indexado.mjs";
+import { texturaUtilizable, muestrearTextura } from "../../scripts/retro3d-lienzo.mjs";
+import { componerPlaya } from "../../scripts/exteriores/playa-escena.mjs";
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
-const DATA = path.join(AQUI, "..", "data", "horizonte");
+const DATA = path.join(AQUI, "..", "..", "data", "horizonte");
 
 /* ---- el multiplano --------------------------------------------------------- */
 

@@ -20,7 +20,7 @@
 // que siguen declarados huérfanos por sus propios motivos.
 
 import { atlasDesdeHyg } from "./atlas-hyg.mjs";
-import { validateCosmography, CosmographyValidationError } from "./catalogo-cosmografico.mjs";
+import { validateCosmography, CosmographyValidationError } from "../catalogo-cosmografico.mjs";
 
 /**
  * Error de importación: detecta formato, convierte y valida.
@@ -122,4 +122,4 @@ export async function importarAtlas(contenido, opciones = {}) {
 }
 
 // Re-exportar el error del validador para que el consumidor lo use igual
-export { CosmographyValidationError } from "./catalogo-cosmografico.mjs";
+export { CosmographyValidationError } from "../catalogo-cosmografico.mjs";

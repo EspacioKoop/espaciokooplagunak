@@ -36,8 +36,8 @@
 // ya acepta `crearSalaCaja`.
 
 import { CACHARROS, MURAL, SECCION } from "./paleta.mjs";
-import { caja, prisma } from "./escena-primitivas.mjs";
-import { metrosPorTextura, texturaMaterial } from "./props-materiales.mjs";
+import { caja, prisma } from "./exteriores/escena-primitivas.mjs";
+import { metrosPorTextura, texturaMaterial } from "./exteriores/props-materiales.mjs";
 
 /** Un cuarto de vuelta, la unidad en la que se gira un prop. */
 const CUARTO = Math.PI / 2;

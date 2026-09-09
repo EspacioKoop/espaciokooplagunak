@@ -29,9 +29,9 @@
 // símbolos.
 
 import { METROS_POR_TEXTURA } from "./escena-primitivas.mjs";
-import { canales } from "./paleta.mjs";
-import { mezclar } from "./retro3d.mjs";
-import { rngSemilla } from "./ventana-nave.mjs";
+import { canales } from "../paleta.mjs";
+import { mezclar } from "../retro3d.mjs";
+import { rngSemilla } from "../ventana-nave.mjs";
 
 /** El lado de la rejilla de un material, en téxeles. */
 export const LADO = 16;

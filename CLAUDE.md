@@ -657,8 +657,8 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `code` + `path`. La consumen el atlas (`catalogo-cosmografico.mjs`, #525) y el catálogo de
     piezas (`catalogo-piezas.mjs`), y esa unificación es el punto: dos validadores de licencia se
     desincronizan, y una licencia desincronizada no es un fallo de forma. El atlas **ya no es
-    cimiento** (#634): `importador-atlas.mjs` une la cadena —`atlas-hyg.mjs` adapta el catálogo
-    estelar HYG al formato y `catalogo-cosmografico.mjs` lo valida— y `atlas-importar-ventana.mjs`
+    cimiento** (#634): `atlas/importador-atlas.mjs` une la cadena —`atlas/atlas-hyg.mjs` adapta el catálogo
+    estelar HYG al formato y `catalogo-cosmografico.mjs` lo valida— y `atlas/atlas-importar-ventana.mjs`
     le da la entrada standalone solo-GM desde la que se importa. Lo cableado es la MAQUINARIA y no
     el contenido: la ventana importa lo que el GM le dé, así que no mete en la partida ninguna
     decisión de #213, que sigue siendo una investigación abierta sobre QUÉ atlas.
@@ -884,7 +884,7 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     es de donde salió el problema. Tres consecuencias que no son extras: un ancla trae **orientación**
     (la dirección de su padre a él), un **gesto es una pose parcial** sobre el reposo y no una lista
     de posiciones absolutas —«quieto» es la pose vacía—, y el **rumbo es un giro del hueso raíz**. Y el rumbo
-    **ya se aplica** (#897): `escena-primitivas.cajaGirada` rota los ocho vértices sobre el centro de
+    **ya se aplica** (#897): `exteriores/escena-primitivas.cajaGirada` rota los ocho vértices sobre el centro de
     la caja, así que el cuerpo de cada jugador mira a donde va. Eso cierra la limitación que
     `nave-avatares-render.mjs` declaraba y aparcaba —«girar exigiría rotar la malla entera por
     vértice»—, que resultó costar dos multiplicaciones por vértice: lo que faltaba no era el cálculo

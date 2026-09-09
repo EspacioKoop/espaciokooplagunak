@@ -17,7 +17,7 @@
 // Puro: solo geometría. Ni Foundry, ni DOM, ni color propio (#351) — el color
 // entra desde fuera, de `PASILLO` en `paleta.mjs`.
 
-import { caja, prisma, trasladar } from "./escena-primitivas.mjs";
+import { caja, prisma, trasladar } from "./exteriores/escena-primitivas.mjs";
 
 /** Funde varias mallas en una sola, desplazando los índices de cara de cada
  *  una por el número de vértices ya acumulados. Es el mismo patrón que

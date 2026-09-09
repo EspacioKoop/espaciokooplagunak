@@ -3,12 +3,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { LADO, MATERIALES, metrosPorTextura, texturaMaterial } from "../scripts/props-materiales.mjs";
-import { METROS_POR_TEXTURA, caja, prisma } from "../scripts/escena-primitivas.mjs";
-import { colocarProp, definirVocabulario } from "../scripts/nave-props.mjs";
-import { VOCABULARIO_URBANO, VOCABULARIO_COSTA } from "../scripts/props-exteriores.mjs";
-import { texturaUtilizable } from "../scripts/retro3d-lienzo.mjs";
-import { componerPlaya } from "../scripts/playa-escena.mjs";
+import { LADO, MATERIALES, metrosPorTextura, texturaMaterial } from "../../scripts/exteriores/props-materiales.mjs";
+import { METROS_POR_TEXTURA, caja, prisma } from "../../scripts/exteriores/escena-primitivas.mjs";
+import { colocarProp, definirVocabulario } from "../../scripts/nave-props.mjs";
+import { VOCABULARIO_URBANO, VOCABULARIO_COSTA } from "../../scripts/exteriores/props-exteriores.mjs";
+import { texturaUtilizable } from "../../scripts/retro3d-lienzo.mjs";
+import { componerPlaya } from "../../scripts/exteriores/playa-escena.mjs";
 
 /* ---- el grano se mide en metros -------------------------------------------- */
 

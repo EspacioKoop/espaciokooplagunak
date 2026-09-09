@@ -43,7 +43,7 @@ import {
   INTERACCIONES as INTERACCIONES_PLAYA,
   PLANTA_PLAYA,
   componerPlaya,
-} from "./playa-escena.mjs";
+} from "./exteriores/playa-escena.mjs";
 import {
   ENTRADA as ENTRADA_MUSEO,
   INTERACCIONES as INTERACCIONES_MUSEO,

@@ -29,7 +29,7 @@
 // `paleta.mjs` (`SECCION`, ya usada para materiales genéricos de nave).
 
 import { AMBAR_SENAL, SECCION } from "./paleta.mjs";
-import { caja } from "./escena-primitivas.mjs";
+import { caja } from "./exteriores/escena-primitivas.mjs";
 import { componerEscena, fundirEscenas, focosCercanos, TOPE_FOCOS } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";

@@ -21,12 +21,12 @@ import {
   VOCABULARIO_PLAYA,
   componerPlaya,
   ESTATUA,
-} from "../scripts/playa-escena.mjs";
-import { colisiona } from "../scripts/nave-movimiento.mjs";
-import { interaccionAlAlcance } from "../scripts/nave-interaccion.mjs";
-import { CATALOGO_MUSEO } from "../scripts/museo-piezas.mjs";
-import { CATALOGO_ANDAR } from "../scripts/nave-catalogo-andar.mjs";
-import { PLAYA } from "../scripts/paleta.mjs";
+} from "../../scripts/exteriores/playa-escena.mjs";
+import { colisiona } from "../../scripts/nave-movimiento.mjs";
+import { interaccionAlAlcance } from "../../scripts/nave-interaccion.mjs";
+import { CATALOGO_MUSEO } from "../../scripts/museo-piezas.mjs";
+import { CATALOGO_ANDAR } from "../../scripts/nave-catalogo-andar.mjs";
+import { PLAYA } from "../../scripts/paleta.mjs";
 
 const RADIO = 0.35;
 

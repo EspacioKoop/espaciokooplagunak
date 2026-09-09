@@ -25,7 +25,7 @@
  * Puro: ni Foundry, ni DOM, ni red, ni reloj.
  */
 
-import { prisma } from "../escena-primitivas.mjs";
+import { prisma } from "../exteriores/escena-primitivas.mjs";
 import { AVATAR } from "../paleta.mjs";
 import { sombrear } from "../retro3d.mjs";
 

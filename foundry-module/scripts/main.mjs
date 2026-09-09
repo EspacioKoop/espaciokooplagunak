@@ -144,7 +144,7 @@ import { crearGrupo } from "./control-escena.mjs";
 import {
   addImportadorAtlasControl,
   registrarImportadorAtlas,
-} from "./atlas-importar-ventana.mjs";
+} from "./atlas/atlas-importar-ventana.mjs";
 
 registerStationFeature(MODULE_ID);
 registerAvatarFeature(MODULE_ID);

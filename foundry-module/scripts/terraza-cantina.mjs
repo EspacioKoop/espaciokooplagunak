@@ -33,7 +33,7 @@
 // Puro y sin color propio (#351).
 
 import { SECCION } from "./paleta.mjs";
-import { caja, prisma } from "./escena-primitivas.mjs";
+import { caja, prisma } from "./exteriores/escena-primitivas.mjs";
 import { componerEscena, fundirEscenas } from "./retro3d.mjs";
 import { campoEstelar, proyectarEstrellas } from "./retro3d-estrellas.mjs";
 import { resolverCamara } from "./nave-camara.mjs";

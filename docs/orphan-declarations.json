@@ -85,7 +85,7 @@
       }
     },
     {
-      "module": "horizonte-preset.mjs",
+      "module": "exteriores/horizonte-preset.mjs",
       "status": "declared-orphan",
       "foundation": false,
       "reason": "Volcado del matte del horizonte a PNG indexados. No lo importa el módulo en caliente a propósito: lo usan las herramientas de prerender y la prueba que verifica los assets guardados.",
@@ -353,7 +353,7 @@
     "cantina-escena.mjs",
     "cantina-icono.mjs",
     "cantina-2d.mjs",
-    "playa-escena.mjs",
+    "exteriores/playa-escena.mjs",
     "museo-escena.mjs",
     "museo-cuadro.mjs",
     "nave-props.mjs",

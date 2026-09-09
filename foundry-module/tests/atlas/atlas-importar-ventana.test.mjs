@@ -6,10 +6,10 @@ import {
   addImportadorAtlasControl,
   importarTextoAtlas,
   registrarImportadorAtlas,
-} from "../scripts/atlas-importar-ventana.mjs";
+} from "../../scripts/atlas/atlas-importar-ventana.mjs";
 
 const ejemplo = await readFile(
-  new URL("../data/cosmografia.example.json", import.meta.url),
+  new URL("../../data/cosmografia.example.json", import.meta.url),
   "utf8",
 );
 

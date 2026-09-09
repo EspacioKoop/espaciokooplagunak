@@ -4,9 +4,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { importarAtlas, ImportadorAtlasError } from "../scripts/importador-atlas.mjs";
-import { validateCosmography, CosmographyValidationError } from "../scripts/catalogo-cosmografico.mjs";
-import { atlasDesdeHyg } from "../scripts/atlas-hyg.mjs";
+import { importarAtlas, ImportadorAtlasError } from "../../scripts/atlas/importador-atlas.mjs";
+import { validateCosmography, CosmographyValidationError } from "../../scripts/catalogo-cosmografico.mjs";
+import { atlasDesdeHyg } from "../../scripts/atlas/atlas-hyg.mjs";
 
 const CSV_HYG_MINIMO = [
   "id,hip,proper,ra,dec,dist,mag,absmag,spect,ci",

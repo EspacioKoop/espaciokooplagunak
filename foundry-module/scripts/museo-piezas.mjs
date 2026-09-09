@@ -96,6 +96,10 @@ export const CATALOGO_MUSEO = Object.freeze({
       id: "venus-de-milo",
       malla: "venus-de-milo",
       naturaleza: "escaneo-de-vaciado",
+      // El escaneo llegó mirando hacia +z: sin girar, quien entra por la
+      // puerta ve el paño de la espalda y no el torso. Ver `girada180` en
+      // `colocarPieza` (museo-escena.mjs).
+      girada180: true,
       nombre: Object.freeze({
         es: "Afrodita de Melos (Venus de Milo)",
         en: "Aphrodite of Melos (Venus de Milo)",
@@ -167,6 +171,8 @@ export const CATALOGO_MUSEO = Object.freeze({
       id: "caballo-marco-aurelio",
       malla: "caballo-marco-aurelio",
       naturaleza: "escaneo-de-vaciado",
+      // Sin girar, el mirador ve la grupa del caballo y no su cabeza.
+      girada180: true,
       nombre: Object.freeze({
         es: "Caballo de la estatua ecuestre de Marco Aurelio",
         en: "Horse from the equestrian statue of Marcus Aurelius",
@@ -189,6 +195,8 @@ export const CATALOGO_MUSEO = Object.freeze({
       id: "david-cabeza",
       malla: "david-cabeza",
       naturaleza: "escaneo-de-vaciado",
+      // Sin girar, el mirador ve la nuca y no la cara.
+      girada180: true,
       nombre: Object.freeze({
         es: "Cabeza del David, de Miguel Ángel",
         en: "Head of David, by Michelangelo",

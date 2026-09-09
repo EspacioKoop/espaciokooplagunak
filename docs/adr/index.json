@@ -94,5 +94,11 @@
     "title": "Seguridad de la capa lúdica",
     "path": "0016-seguridad-capa-ludica.md",
     "status": "Propuesta"
+  },
+  {
+    "id": "ADR-0017",
+    "title": "Puestos sin tripulación: degradado con aviso, sin automatización",
+    "path": "0017-puestos-vacios-degradado-con-aviso.md",
+    "status": "Aceptada"
   }
 ]

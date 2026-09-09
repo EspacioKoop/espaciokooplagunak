@@ -38,7 +38,7 @@ unset BRIDGE_TOKEN
 ```
 
 Antes de custodiar, compartir o sustituir el token, sigue el procedimiento de
-[`docs/BRIDGE_AUTHENTICATION.md`](../docs/BRIDGE_AUTHENTICATION.md). Cambiar
+[`docs/seguridad/BRIDGE_AUTHENTICATION.md`](../docs/seguridad/BRIDGE_AUTHENTICATION.md). Cambiar
 `.env` no rota por sí solo la credencial: hay que recrear el servicio `bridge`.
 
 Los clientes del puente de mando (EmptyEpsilon/Espaciokoop Lagunak de
@@ -94,7 +94,7 @@ El resto de la configuración (`.env`, puertos, healthchecks) no cambia.
 
 **Nunca añadas el puerto 8080 a `ports:`.** Es el vector de ataque descrito en
 [`SECURITY.md`](../SECURITY.md) y en el inventario
-[`docs/API_HTTP.md`](../docs/API_HTTP.md).
+[`docs/seguridad/API_HTTP.md`](../docs/seguridad/API_HTTP.md).
 
 El puente también usa HTTP sin TLS. El valor seguro por defecto
 `BRIDGE_BIND=127.0.0.1` exige que el navegador del GM y compose compartan host.

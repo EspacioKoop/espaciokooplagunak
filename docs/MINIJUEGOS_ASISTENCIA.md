@@ -7,13 +7,13 @@
   El ciclo completo —pedir, resolver, consumir vía el relé del titular— es jugable de extremo a
   extremo, con cuatro minijuegos de destreza (temporización, secuencia, precisión, puzzle) y
   lectura real de modificadores dnd5e — ver
-  [#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500).
-- Issue: [#309](https://github.com/VaroTv7/espaciokooplagunak/issues/309)
+  [#500](https://github.com/EspacioKoop/espaciokooplagunak/issues/500).
+- Issue: [#309](https://github.com/EspacioKoop/espaciokooplagunak/issues/309)
 - Fase: **4** (experiencia cooperativa). No forma parte del criterio de salida de Fase 3.
-- Depende de: contrato de minijuegos [#308](https://github.com/VaroTv7/espaciokooplagunak/issues/308)
+- Depende de: contrato de minijuegos [#308](https://github.com/EspacioKoop/espaciokooplagunak/issues/308)
   ([MINIJUEGOS_FOUNDRY.md](MINIJUEGOS_FOUNDRY.md)), identidad no falsificable
-  [#237](https://github.com/VaroTv7/espaciokooplagunak/issues/237), permisos por puesto
-  [#268](https://github.com/VaroTv7/espaciokooplagunak/issues/268),
+  [#237](https://github.com/EspacioKoop/espaciokooplagunak/issues/237), permisos por puesto
+  [#268](https://github.com/EspacioKoop/espaciokooplagunak/issues/268),
   [ADR-0002](adr/0002-autoridad-de-datos-foundry-vs-simulacion.md).
 
 Este documento fija el diseño de «ayudar a otro puesto» **antes** de escribir código. No declara
@@ -310,7 +310,7 @@ El motor dejó de ser código muerto: `asistencia/catalogo.mjs` le da **contenid
 `asistencia-wiring.mjs` lo **enchufa a Foundry** y `asistencia-ui.mjs` (sobre
 `asistencia/vista.mjs`) es la ventana donde el asistente pulsa. El camino está completo de extremo
 a extremo y es jugable en mesa, con cuatro minijuegos de destreza y lectura real de modificadores
-dnd5e — ver [#500](https://github.com/VaroTv7/espaciokooplagunak/issues/500).
+dnd5e — ver [#500](https://github.com/EspacioKoop/espaciokooplagunak/issues/500).
 
 - **El catálogo es contenido, no lógica.** Tres tareas base —estabilizar un sistema caliente
   (ingeniería, `set_system_coolant`), bordar una maniobra (pilotaje, `set_impulse`) y afinar un

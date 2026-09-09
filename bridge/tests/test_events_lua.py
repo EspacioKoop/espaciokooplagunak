@@ -44,6 +44,7 @@ local objects = {
     object("LAGUNAK_EVT_ship_repositioned_s90_654321_000008_mordor_0000000425"),
     object("LAGUNAK_EVT_ship_repositioned_s90_654321_000009_lagunak_42"),
     object("LAGUNAK_EVT_ship_repositioned_s90_654321_000010_argia_0000000425_extra"),
+    object("LAGUNAK_EVT_parlamento_abierto_Itzal_1__Independent"),
 }
 function getPlayerShip(_) return player end
 function getObjectsInRadius(_, _, radius)
@@ -84,6 +85,66 @@ function getScenarioTime() return 42.5 end
                 "scenario": "scenario_90_lagunak_primera_guardia",
                 "anchor": "argia",
                 "scenario_time": 42.5,
+            },
+            {
+                "id": "parlamento-abierto-Itzal_1",
+                "type": "parlamento_abierto",
+                "scenario": "scenario_90_lagunak_primera_guardia",
+                "contacto": {
+                    "id": "Itzal_1",
+                    "callsign": "Itzal 1",
+                    "faction": "Independent",
+                },
+                "scenario_time": 42.5,
+            },
+        ]
+    }
+
+
+def test_events_lua_normaliza_parlamento_abierto(tmp_path: Path):
+    lua = _interprete_lua()
+    if lua is None:
+        pytest.skip("no hay intérprete Lua para probar el DTO real de eventos")
+    lua = cast(str, lua)
+
+    preambulo = r'''
+local function object(callsign)
+    return { getCallSign = function() return callsign end }
+end
+local player = {
+    getPosition = function() return 100, 200 end,
+}
+local objects = {
+    object("LAGUNAK_EVT_parlamento_abierto_Itzal_1__Independent"),
+}
+function getPlayerShip(_) return player end
+function getObjectsInRadius(_, _, radius)
+    assert(radius == 5000)
+    return objects
+end
+function getScenarioTime() return 7.5 end
+'''
+    driver = preambulo + "\nlocal function events_endpoint()\n" + bridge._EVENTS_LUA
+    driver += "\nend\nio.write(events_endpoint())\n"
+    ruta = tmp_path / "events-parlamento-driver.lua"
+    ruta.write_text(driver, encoding="utf-8")
+
+    proc = subprocess.run([lua, str(ruta)], capture_output=True, timeout=10)
+    assert proc.returncode == 0, proc.stderr.decode("utf-8", "replace")
+    payload = json.loads(proc.stdout.decode("utf-8"))
+
+    assert payload == {
+        "events": [
+            {
+                "id": "parlamento-abierto-Itzal_1",
+                "type": "parlamento_abierto",
+                "scenario": "scenario_90_lagunak_primera_guardia",
+                "contacto": {
+                    "id": "Itzal_1",
+                    "callsign": "Itzal 1",
+                    "faction": "Independent",
+                },
+                "scenario_time": 7.5,
             },
         ]
     }

@@ -35,6 +35,10 @@ import { cartelaDe, getPiezaCatalogada } from "./catalogo-piezas.mjs";
 import "./museo-piezas.mjs";
 import "./museo-cuadros.mjs";
 import "./pasillo-recuerdos-piezas.mjs";
+import "./libro-catalogo.mjs";
+import { ID_LIBRO_CLASICO } from "./libro-catalogo.mjs";
+import { PAGINAS_LIBRO } from "./libro-museo.mjs";
+import { activarLibro, cerrarLibro } from "./libro-sesion.mjs";
 import { resolverAsiento } from "./nave-asiento.mjs";
 import { ponerPose } from "./nave-pose.mjs";
 import { resolverInvestigacion, PROCEDENCIA_SRD_TEXTO } from "./libro-srd-investigacion.mjs";
@@ -152,12 +156,35 @@ export const TECLA_GIRO = Object.freeze({ q: -1, e: 1, ArrowLeft: -1, ArrowRight
  * una prueba. `andar-nave-app.test.mjs` compara las tres tablas y falla si un
  * mapa pisa a otro.
  */
-export const TECLAS_ACCION = Object.freeze({ v: "camara", V: "camara", f: "asiento", F: "asiento" });
+export const TECLAS_ACCION = Object.freeze({
+  v: "camara",
+  V: "camara",
+  // `F` es UN SOLO verbo, "usar", y no una tecla por cosa usable. Sentarse
+  // (#846) y pasar página del libro del museo (#853) llegaron por ramas
+  // distintas reclamando ambas esta tecla, y la salida no es darle a cada una
+  // la suya: las dos son ya `accion.tipo` del MISMO raíl de interacción
+  // (`asientoAlAlcance`, `libroAlAlcance`), así que quien juega no distingue
+  // una silla de un atril — distinguirlas en el teclado sería inventar una
+  // diferencia que el juego no tiene. Quién responde lo decide lo que tengas
+  // delante, en `usarLoQueHayAlAlcance`.
+  //
+  // En el flanco de PULSACIÓN, igual que `camara`: es un gesto, no una
+  // dirección que se mantenga — mantenerla pulsada no debe pasar página
+  // sesenta veces por segundo.
+  f: "usar",
+  F: "usar",
+});
 
 /**
  * Engancha teclado a un mando de `arrancarAndar`. Vive fuera de las dos
  * clases a propósito, igual que `encenderSala` en `cantina-app.mjs`: es
  * cableado de DOM, no comportamiento de ventana.
+ *
+ * `acciones.alUsar` es opcional: el gesto de "usar" (tecla F) — sentarse, o
+ * pasar página del libro del museo. Quién responde lo resuelve el llamante
+ * contra lo que haya al alcance, no esta función, que solo traduce la tecla.
+ * Sin callback la tecla no hace nada, mismo contrato que
+ * `alTocarPuerta`/`alAlcanzarInteraccion` en `arrancarAndar`.
  */
 function engancharTeclado(raiz, mando, acciones = {}) {
   const lienzo = raiz?.querySelector?.(".lagunak-andar-lienzo");
@@ -214,17 +241,18 @@ function engancharTeclado(raiz, mando, acciones = {}) {
       mando.alternarCamara();
       return;
     }
-    // Sentarse y levantarse (asientos). `f` y no `e`: `e` ya gira, y una tecla
-    // repetida aquí sería código muerto —`TECLA_DIRECCION` y `TECLA_GIRO` se
-    // consultan antes y hacen `return`—, que es exactamente el fallo que la
+    // "Usar" lo que tengas delante: sentarse/levantarse en una silla (#846),
+    // pasar página del libro del museo (#853). `f` y no `e`: `e` ya gira, y una
+    // tecla repetida aquí sería código muerto —`TECLA_DIRECCION` y `TECLA_GIRO`
+    // se consultan antes y hacen `return`—, que es exactamente el fallo que la
     // cámara tuvo con `c` y que `TECLAS_RESERVADAS` vigila desde entonces.
     //
-    // En el flanco de PULSACIÓN, como la cámara: es un interruptor, no una
-    // dirección que se mantenga.
-    if (TECLAS_ACCION[ev.key] === "asiento") {
+    // En el flanco de PULSACIÓN, como la cámara: es un gesto, no una dirección
+    // que se mantenga.
+    if (TECLAS_ACCION[ev.key] === "usar") {
       ev.preventDefault();
       ev.stopPropagation();
-      acciones.alternarAsiento?.();
+      acciones.alUsar?.();
     }
   };
   const onKeyUp = (ev) => {
@@ -333,8 +361,9 @@ function arrancar(raiz, estanciaPedida = null) {
   function pintarCartela(piezaId) {
     const nodo = raiz?.querySelector?.("[data-andar-cartela]");
     if (!nodo) return;
-    // Tres catálogos y una sola lectura: las esculturas, los cuadros de la
-    // pared (#836) y las piezas del pasillo de los recuerdos se colocan
+    // Cuatro catálogos y una sola lectura: las esculturas, los cuadros de la
+    // pared (#836), las piezas del pasillo de los recuerdos y el libro del
+    // atril (#853) se colocan
     // distinto en su sala, pero la cartela se lee igual en los tres. Un
     // `accion.pieza` es un id opaco y el registro lo resuelve contra todos.
     const pieza = piezaId ? getPiezaCatalogada(piezaId) : null;
@@ -357,6 +386,40 @@ function arrancar(raiz, estanciaPedida = null) {
     escribir("[data-cartela-texto]", cartela.texto);
     escribir("[data-cartela-credito]", cartela.credito);
     nodo.hidden = false;
+  }
+
+  // El id de la pieza del libro que está al alcance AHORA MISMO, o `null`
+  // (#914, follow-up al review de VaroTv7). El motor solo avisa en el
+  // FLANCO de entrada (`alAlcanzarInteraccion`): la primera llegada abre el
+  // libro, pero sin guardar esto en algún sitio no había forma de repetir
+  // el gesto sin salir y volver a entrar — y salir ya cierra el libro de
+  // golpe (`alSalirDeInteraccion`), así que esa vuelta siempre reabría en
+  // la página 0. El callback cableado a la tecla F (ver `engancharTeclado`
+  // más abajo) lee esta variable para repetir el MISMO gesto mientras se
+  // sigue de pie ante el libro, sin depender de un segundo flanco que el
+  // motor no dispara.
+  let libroAlAlcance = null;
+
+  /**
+   * El gesto del libro (#853, vertical 2): un solo camino para abrir,
+   * pasar página y cerrar en la última — la máquina de estados en
+   * `libro-estado.mjs`/`libro-sesion.mjs` ya decide cuál de las tres toca
+   * según la fase en la que esté. Se llama desde el flanco de entrada
+   * (`alAlcanzarInteraccion`) Y desde la tecla repetible (F, más abajo) con
+   * el mismo `piezaId` guardado en `libroAlAlcance`.
+   *
+   * `mando.ahora()` y NUNCA `Date.now()` (#914): `arrancarAndar` evalúa la
+   * transición del libro con el reloj MONOTÓNICO que ya usa para pintar cada
+   * fotograma (`opciones.tiempo` en `libro-museo.mjs`); mezclar ese reloj con
+   * el de pared es justo el bug que dejaba la apertura congelada en 0 — el
+   * tiempo transcurrido salía negativo y se limitaba a cero.
+   */
+  function gestoLibro(piezaId) {
+    const reducirMovimiento = Boolean(
+      globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches,
+    );
+    activarLibro({ totalPaginas: PAGINAS_LIBRO, reducirMovimiento, ahoraMs: mando.ahora() });
+    pintarCartela(piezaId);
   }
 
   function pintarInvestigacion(visible) {
@@ -390,6 +453,7 @@ function arrancar(raiz, estanciaPedida = null) {
         if (estanciaActual === "museo") marcadorInvestigacionActual = marcadorLibroMuseo(prueba);
       };
     });
+
   }
 
   let ultimoSelloEnviado = null;
@@ -575,7 +639,19 @@ function arrancar(raiz, estanciaPedida = null) {
       // El texto sale del catálogo —que es el dato— y solo el nombre de la
       // naturaleza sale de i18n, que es interfaz.
       else if (accion?.tipo === "cartela") pintarCartela(accion.pieza);
+      // El libro interactuable (#853, vertical 2). La primera llegada lo
+      // abre; mientras se está de pie ante él, la tecla de interactuar
+      // (`gestoLibro`, más abajo) repite el MISMO gesto para pasar página o
+      // cerrarlo en la última — el flanco de entrada del motor solo dispara
+      // una vez por acercamiento, así que aquí solo se recuerda QUÉ libro es
+      // y se dispara la primera apertura.
+      else if (accion?.tipo === "libro") {
+        libroAlAlcance = accion.pieza ?? ID_LIBRO_CLASICO;
+        gestoLibro(libroAlAlcance);
+      }
+
       else if (accion?.tipo === "investigar-libro") pintarInvestigacion(true);
+
       // Un punto que lleva a otra estancia (#587: la cabina de teléfono de la
       // playa devuelve a la nave). Reusa EXACTAMENTE el camino de una puerta en
       // vez de tener su propio salto: cambiar de estancia ya está resuelto, y
@@ -592,9 +668,17 @@ function arrancar(raiz, estanciaPedida = null) {
     },
     // Alejarse la retira (#598). Va por el flanco de SALIDA del bucle y no por
     // un temporizador: una cartela se deja de leer cuando te apartas, no cuando
-    // pasan unos segundos.
+    // pasan unos segundos. Y para el libro (#853) además lo CIERRA sin animar
+    // —la misma regla instantánea que ya tenía la cartela—: alejarse de un
+    // libro que nadie mira no debería seguir gastando fotogramas ni recordando
+    // por qué página iba. Llamar a `cerrarLibro()` al salir de CUALQUIER
+    // interacción (no solo la del libro) es barato — resetear un libro que ya
+    // estaba cerrado no hace nada— y así no hace falta que este flanco sepa de
+    // qué interacción se está saliendo.
     alSalirDeInteraccion: () => {
       pintarCartela(null);
+      cerrarLibro();
+      libroAlAlcance = null;
       asientoAlAlcance = null;
       pintarInvestigacion(false);
       // El marcador es de la interacción, no de la sala: se retira al
@@ -613,17 +697,33 @@ function arrancar(raiz, estanciaPedida = null) {
     // solo la lista ya resuelta de ese instante.
     otrosJugadores: jugadoresParaRender,
   });
+  // La plantilla empieza con el HUD vacío: anunciar también la llegada,
+  // no solo los cambios de estancia posteriores (puertas o irA).
+  rotularSala(estanciaActual);
   const desenganchar = engancharTeclado(raiz, mando, {
     /**
-     * `f`: siéntate en lo que tengas delante, o levántate si ya estás sentado.
+     * `f`: usa lo que tengas delante. Hoy son dos cosas —sentarse/levantarse
+     * (#846) y el libro del atril (#853)— y mañana serán más, así que el
+     * despacho vive AQUÍ y no en `engancharTeclado`, que solo traduce la
+     * tecla: quien resuelve contra qué hay al alcance es quien lleva la cuenta
+     * de lo que hay al alcance.
      *
-     * Levantarse manda sobre sentarse cuando las dos cosas son posibles —estás
-     * sentado en una silla y tienes otra al alcance—, porque si no la tecla
-     * dejaría de tener forma de salir: te cambiaría de silla para siempre.
-     * Dónde acaban los ojos lo calcula `nave-asiento.mjs` a partir de lo que
-     * mide el mueble; aquí no hay ni una altura escrita.
+     * El orden de las tres ramas no es casual:
+     *
+     * 1. Levantarse manda sobre todo lo demás cuando estás sentado, porque si
+     *    no la tecla dejaría de tener forma de salir: te cambiaría de silla
+     *    para siempre, o te dejaría pasando páginas sin poder ponerte de pie.
+     * 2. El libro va antes que sentarse porque es el gesto REPETIBLE: el motor
+     *    solo avisa en el flanco de ENTRADA (`alAlcanzarInteraccion`), así que
+     *    sin esta tecla nunca se llega a la página 1 — salir del punto para
+     *    volver a entrar ya cierra el libro y lo devuelve a la página 0.
+     * 3. Sentarse es el caso por defecto.
+     *
+     * Hoy ninguna sala tiene silla y atril a la vez (el museo no tiene sillas),
+     * así que las ramas 2 y 3 no compiten de verdad; el orden está escrito para
+     * el día que sí, no porque haga falta ahora.
      */
-    alternarAsiento: () => {
+    alUsar: () => {
       if (mando.estaSentado()) {
         const ocupado = mando.asientoOcupado();
         mando.levantarse();
@@ -631,6 +731,14 @@ function arrancar(raiz, estanciaPedida = null) {
         // hace que la pose signifique algo: si se quedara retirada, «retirada»
         // dejaría de querer decir «aquí hay alguien» a la segunda vez.
         if (ocupado) recomponerConPose(ocupado, "libre");
+        return;
+      }
+      // El gesto repetible del libro, SOLO si hay uno al alcance ahora mismo
+      // (`libroAlAlcance`, ver su cabecera más arriba): sin esto, pulsar F en
+      // mitad del vestíbulo dispararía el mismo `activarLibro` que un libro
+      // que no se está tocando.
+      if (libroAlAlcance) {
+        gestoLibro(libroAlAlcance);
         return;
       }
       if (!asientoAlAlcance) return;

@@ -3,9 +3,9 @@
   "declarations": [
 {
       "module": "libro-catalogo.mjs",
-      "status": "declared-orphan",
+      "status": "connected",
       "foundation": true,
-      "reason": "Validador de catálogo sin consumidor UI todavía; no distribuye obras ni acredita licencias externas. El vertical SRD del museo usa su propio libro geométrico.",
+      "reason": "El museo importa ID_LIBRO_CLASICO para su punto de interacción y el catálogo registra la ficha que resuelve la cartela del libro procedural (#853). Conserva además el validador puro; esta conexión no acredita archivos ni licencias externas ni sustituye el smoke visual pendiente.",
       "declaredBy": "OTACON Astra",
       "declaredAt": "2026-09-09",
       "evidence": {

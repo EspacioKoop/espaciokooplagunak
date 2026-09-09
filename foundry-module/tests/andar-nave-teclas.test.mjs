@@ -49,9 +49,13 @@ test("la cámara tiene tecla, y en mayúscula y minúscula", () => {
   assert.equal(TECLAS_ACCION.V, "camara");
 });
 
-test("sentarse tiene tecla, también en las dos cajas, y no pisa a ninguna otra", () => {
-  assert.equal(TECLAS_ACCION.f, "asiento");
-  assert.equal(TECLAS_ACCION.F, "asiento");
+test("usar tiene tecla, también en las dos cajas, y no pisa a ninguna otra", () => {
+  // `F` es UN verbo, "usar", y no una tecla por cosa usable: sentarse (#846) y
+  // pasar página del libro del museo (#853) llegaron por ramas distintas
+  // reclamando ambas esta tecla. Quién responde lo decide lo que tengas
+  // delante, no el teclado — ver `alUsar` en `andar-nave-app.mjs`.
+  assert.equal(TECLAS_ACCION.f, "usar");
+  assert.equal(TECLAS_ACCION.F, "usar");
   // `e` habría sido la tecla obvia y es la de girar a la derecha: ahí esta rama
   // sería código MUERTO, porque `TECLA_GIRO` se consulta antes y hace `return`.
   // Es el mismo choque que dejó la cámara sin funcionar atada a `c`.

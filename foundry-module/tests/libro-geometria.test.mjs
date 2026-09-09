@@ -46,21 +46,13 @@ test("abierto plano (π) separa las tapas a ambos lados del lomo", () => {
   assert.ok(maxX > 0.18, `la tapa derecha no se abre: maxX=${maxX}`);
 });
 
-test("la hoja gira de vertical (0) a tumbada (apertura)", () => {
-  const vertical = libroGeometria(Math.PI / 2, 0);
-  const tumbada = libroGeometria(Math.PI / 2, Math.PI / 2);
-  const span = (m) => {
-    const ys = m.vertices.slice(...HOJA).map((v) => v[1]);
-    return Math.max(...ys) - Math.min(...ys);
+test("la hoja pasa por la vertical entre ambas tapas de un libro abierto plano", () => {
+  const span = (vuelo) => {
+    const ys = libroGeometria(Math.PI, vuelo).vertices.slice(...HOJA).map(v=>v[1]);
+    return Math.max(...ys)-Math.min(...ys);
   };
-  // Vertical (hojaVuelo=0): la hoja se levanta y queda de pie, recorre alto en y.
-  // Tumbada (hojaVuelo=apertura): yace plana sobre las tapas, recorre poco en y.
-  const spanVertical = span(vertical);
-  const spanTumbada = span(tumbada);
-  assert.ok(
-    spanVertical > spanTumbada + 0.1,
-    `la hoja no recorre: span vertical ${spanVertical} vs tumbada ${spanTumbada}`,
-  );
+  assert.ok(span(Math.PI/2)>span(0)+0.1);
+  assert.ok(span(Math.PI/2)>span(Math.PI)+0.1);
 });
 
 test("parámetros no finitos o no positivos lanzan", () => {
@@ -75,4 +67,23 @@ test("la malla es determinista para el mismo estado", () => {
   const b = libroGeometria(1.2, 0.6, 0.2, 0.15, 0.02);
   assert.deepEqual(a.vertices, b.vertices);
   assert.deepEqual(a.caras, b.caras);
+});
+
+
+test("las tapas cierran juntas y la hoja recorre el ángulo interior completo", () => {
+  for(const apertura of [0, Math.PI/2, Math.PI]) {
+    const m=libroGeometria(apertura,0);
+    // Centros de los bordes libres: a izquierda y derecha de la bisagra.
+    const centro=(vertices)=>[0,1,2].map(i=>vertices.reduce((n,v)=>n+v[i],0)/vertices.length);
+    const left=centro([1,2,5,6].map(i=>m.vertices[i]));
+    const right=centro([9,10,13,14].map(i=>m.vertices[i]));
+    assert.ok(Math.abs(left[1]-right[1])<1e-9);
+    assert.ok(Math.abs(left[0]+right[0])<1e-9);
+    for(const [vuelo,target] of [[0,left],[apertura,right]]) {
+      const hoja=libroGeometria(apertura,vuelo);
+      const edge=centro([25,26,29,30].map(i=>hoja.vertices[i]));
+      assert.ok(Math.abs(edge[0]-target[0])<1e-9);
+      assert.ok(Math.abs(edge[1]+0.02-target[1])<1e-9);
+    }
+  }
 });

@@ -7,6 +7,7 @@ import { validarCatalogoPiezas } from "../scripts/catalogo-piezas.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "../scripts/museo-piezas.mjs";
 import {
   ANCHO,
+  ATRIL_LIBRO,
   ENTRADA,
   INTERACCIONES,
   PIEZAS_COLOCADAS,
@@ -185,10 +186,10 @@ test("la salida devuelve a la nave, y es lo único que transporta en toda la sal
 });
 
 test("NADA en la sala concede, cuenta ni recuerda (docs/FOUNDRY.md)", () => {
-  // Leer, investigar de forma efímera y salir son acciones de visita; ninguna
-  // concede, cuenta ni recuerda progreso de campaña.
+  // Visita efímera: cartelas, investigación y animación no guardan progreso.
   const tipos = new Set(INTERACCIONES.map((punto) => punto.accion?.tipo));
-  assert.deepEqual([...tipos].sort(), ["cartela", "estancia", "investigar-libro"]);
+  assert.deepEqual([...tipos].sort(), ["cartela", "estancia", "investigar-libro", "libro"]);
+
 });
 
 test("se entra dentro de la sala, en suelo libre y mirando a las piezas", () => {
@@ -360,4 +361,48 @@ test("las 18 piezas se alcanzan ANDANDO desde la entrada, no solo por tener el m
     .filter((c) => !vistos.has(clave(c.mirador[0], c.mirador[1])))
     .map((c) => c.pieza.id);
   assert.deepEqual(inalcanzables, [], "hay piezas a las que no se puede llegar andando");
+});
+
+test("el atril del libro conserva las tres holguras que su cabecera afirma (#853)", () => {
+  // La cabecera de `ATRIL_LIBRO` justifica su posición con tres distancias
+  // medidas. Esta prueba existe porque esas cifras YA caducaron una vez: el
+  // atril se colocó contra una sala de 12 x 9 y #836/#838 la dejaron en 15 x 10
+  // con cuadros en los muros laterales, así que el sitio "en el lado despejado"
+  // pasó a estar encima del mirador de un cuadro sin que fallara nada. Cambiar
+  // ANCHO, PROFUNDIDAD o el reparto de pedestales tiene que romper aquí, no en
+  // el QA.
+  const puntoLibro = INTERACCIONES.find((i) => i.accion?.tipo === "libro")?.punto;
+  assert.ok(puntoLibro, "no hay punto de interacción del libro");
+  const dist = (ax, az, bx, bz) => Math.hypot(ax - bx, az - bz);
+
+  // 1. Lejos de la entrada: ni tapona el paso ni cae en la recta entrada -> fondo.
+  assert.ok(
+    dist(puntoLibro[0], puntoLibro[1], ENTRADA.x, ENTRADA.z) >= 3.0,
+    "el atril se ha acercado a la entrada y tapona por donde se entra",
+  );
+
+  // 2. Lejos de cualquier OTRO punto de interacción. Es el que más importa: dos
+  //    puntos a menos de un metro se disparan a la vez, y quien va a leer una
+  //    cartela abriría el libro sin querer.
+  const otros = INTERACCIONES.filter((i) => i.accion?.tipo !== "libro");
+  for (const otro of otros) {
+    assert.ok(
+      dist(puntoLibro[0], puntoLibro[1], otro.punto[0], otro.punto[1]) >= 1.5,
+      `el punto del libro se solapa con la interacción "${otro.id}"`,
+    );
+  }
+
+  // 3. Lejos del muro izquierdo, que es donde cuelgan los cuadros (#836): sus
+  //    miradores quedan entre el muro y el atril, y el atril no puede comerse
+  //    ese pasillo.
+  assert.ok(ATRIL_LIBRO.x >= 2.0, "el atril invade el pasillo de los cuadros del muro izquierdo");
+
+  // Y el bloque del atril no puede solaparse con ningún pedestal.
+  const medioAtril = 0.5 / 2 + 1.15 / 2;
+  for (const colocada of PIEZAS_COLOCADAS) {
+    const solapa =
+      Math.abs(colocada.centro[0] - ATRIL_LIBRO.x) < medioAtril &&
+      Math.abs(colocada.centro[2] - ATRIL_LIBRO.z) < medioAtril;
+    assert.ok(!solapa, `el atril se solapa con el pedestal de "${colocada.pieza.id}"`);
+  }
 });

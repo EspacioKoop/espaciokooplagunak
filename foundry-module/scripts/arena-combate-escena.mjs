@@ -770,6 +770,8 @@ export const INTERACCIONES = declararInteracciones([
   {
     id: "salida-arena",
     punto: [ANCHO / 2, LADO_CASILLA * 0.4],
+    // La llegada está a 0,4 casillas: no debe salir sin moverse hacia el borde.
+    radio: 0.2,
     orientacion: Math.PI,
     accion: { tipo: "estancia", estancia: "cantina" },
   },

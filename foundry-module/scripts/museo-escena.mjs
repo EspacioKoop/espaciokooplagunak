@@ -72,6 +72,8 @@ import { piezasMuroMuseo } from "./museo-mural.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
 import { CATALOGO_MUSEO, MALLAS_MUSEO } from "./museo-piezas.mjs";
 import { deformarPieza } from "./estatua-rig.mjs";
+import { ID_LIBRO_CLASICO } from "./libro-catalogo.mjs";
+import { ALTO_PAGINA } from "./libro-pagina.mjs";
 import { CATALOGO_CUADROS } from "./museo-cuadros.mjs";
 import { ALTO_TOTAL, ANCHO_TOTAL, piezasCuadro } from "./museo-cuadro.mjs";
 
@@ -387,6 +389,61 @@ function distanciaDeMirada(limites) {
   return Math.max(DISTANCIA_MIRADA, medioFondo + RADIO_CUERPO + MARGEN_MIRADA);
 }
 
+/**
+ * El atril del libro interactuable (#853, vertical 2). Posición fija, a mano
+ * —igual que la cartela de cada pieza—, y NO sale de la fórmula de columnas de
+ * `X_PEDESTALES`: es un mueble más, no una obra más de la fila. A diferencia de
+ * un pedestal, aquí hay que PLANTARSE al lado, así que el hueco alrededor
+ * importa más que en una vitrina.
+ *
+ * Va en la esquina DELANTERA IZQUIERDA, en la banda que queda entre la entrada
+ * (`Z_ENTRADA` = 1,8) y la primera fila de pedestales, y no en el centro de la
+ * sala: con `ANCHO` = 15 y `PROFUNDIDAD` = 10 esa banda es el único suelo que
+ * no es ni pasillo de mirada ni corredor de entrada. Las tres cifras están
+ * medidas, no estimadas, y son la razón de que el atril esté donde está:
+ *
+ * - 4,32 m de la entrada (7,5 · 1,8) al punto donde se lee, así que el atril no
+ *   tapona por donde se entra ni cae en la línea recta entrada → fondo, que es
+ *   por donde va todo el mundo.
+ * - 1,79 m al `mirador` más cercano (el del Laocoonte). Importa más de lo que
+ *   parece: dos puntos de interacción a menos de un metro se disparan a la vez,
+ *   y quien se acerca a leer una cartela abriría el libro sin querer.
+ * - 2,55 m al muro izquierdo, que es donde cuelgan los cuadros de #836 — sus
+ *   miradores están en x = 1,1, entre el muro y el atril, y el atril no puede
+ *   comerse ese pasillo.
+ *
+ * Si cambian `ANCHO`, `PROFUNDIDAD` o el reparto de pedestales, estas tres
+ * distancias hay que volver a medirlas: `museo-escena.test.mjs` las comprueba,
+ * así que el día que dejen de cumplirse falla la suite y no el QA.
+ *
+ * `yaw` es la rotación con la que `libro-museo.mjs` planta el libro en la
+ * sala (una rotación de PLANTA, no la convención `front = (sin, cos)` de la
+ * cámara) — es una decisión de composición y no afecta a dónde se activa el
+ * libro, que fija `PUNTO_LIBRO`/`ORIENTACION_LIBRO` de abajo con la misma
+ * convención que ya usa cada `mirador` de pieza.
+ */
+// El centro del libro queda a la altura de los ojos de pie; no exige agacharse.
+export const ATRIL_LIBRO = Object.freeze({ x: 2.55, z: 1.5, yaw: Math.PI / 2, altura: 1.45 });
+
+/**
+ * Desde dónde se activa el libro, y hacia dónde hay que mirar para verlo:
+ * `front(orientacion) = (sin, cos)`, la misma convención de `nave-camara.mjs`
+ * que ya usan `puntoLibreCerca`/el `mirador` de cada pieza. Se aparta del
+ * atril por el lado de +x —hacia el centro de la sala, que es el lado abierto—
+ * y no por el de la pared de la izquierda, donde 0,9 m dejaría a quien mira
+ * casi pegado al muro y encima encima del mirador de un cuadro.
+ */
+const ORIENTACION_LIBRO = (3 * Math.PI) / 2; // front = (-1, 0): se aparta hacia +x, mira hacia -x
+const PUNTO_LIBRO = Object.freeze([
+  ATRIL_LIBRO.x - DISTANCIA_MIRADA * 0.6 * Math.sin(ORIENTACION_LIBRO),
+  ATRIL_LIBRO.z - DISTANCIA_MIRADA * 0.6 * Math.cos(ORIENTACION_LIBRO),
+]);
+
+/** El soporte llega al borde inferior del libro vertical, no a su centro. */
+const ATRIL_LIBRO_MEDIDAS = Object.freeze({ ancho: 0.5, alto: ATRIL_LIBRO.altura - ALTO_PAGINA / 2, profundo: 0.35 });
+
+export const ID_INTERACCION_LIBRO = "libro-clasico";
+
 /* ---- colocar una pieza ----------------------------------------------------- */
 
 /** La caja que ocupa una malla, en sus propias coordenadas. */
@@ -652,6 +709,17 @@ function mobiliario() {
       colision: false,
     });
   }
+  // El bloque del atril del libro (#853): SOLO el mueble estático, para que
+  // bloquee el paso igual que cualquier otro pedestal. El libro en sí —tapas,
+  // hoja, página— no vive aquí: se anima fotograma a fotograma y lo compone
+  // `libro-museo.componerMuseoConLibro` por encima de esta sala, que es
+  // estática por construcción (se calcula una sola vez, ver `PIEZAS_COLOCADAS`
+  // más abajo).
+  piezas.push({
+    centro: [ATRIL_LIBRO.x, ATRIL_LIBRO_MEDIDAS.alto / 2, ATRIL_LIBRO.z],
+    medidas: [ATRIL_LIBRO_MEDIDAS.ancho, ATRIL_LIBRO_MEDIDAS.alto, ATRIL_LIBRO_MEDIDAS.profundo],
+    color: MUSEO.pedestal,
+  });
   piezas.push({ centro: [...SALIDA.centro], medidas: [...SALIDA.medidas], color: MUSEO.zocalo });
   // Los cuadros entran como mobiliario con su malla propia, SIN colisión y SIN
   // piel: el muro del que cuelgan ya frena a quien se acerque —chocarse con un
@@ -695,9 +763,26 @@ export const INTERACCIONES = declararInteracciones([
   })),
   {
     id: "salida",
-    punto: [SALIDA.centro[0], SALIDA.centro[2] + 0.9],
+    // Alcance junto a la cara del torno, no alrededor del punto de llegada.
+    // El radio genérico (1,2 m) con el ancla antigua a z=1,6 incluía la
+    // ENTRADA (z=1,8): el primer paso del motor devolvía a la cantina sin
+    // pulsar ninguna tecla. Acercarse al torno sigue activando la salida.
+    punto: [SALIDA.centro[0], SALIDA.centro[2] + SALIDA.medidas[2] / 2],
+    radio: 0.35,
     orientacion: Math.PI,
     accion: { tipo: "estancia", estancia: "cantina" },
+  },
+  // El libro interactuable (#853, vertical 2). Un solo punto y no uno por
+  // página: `accion.tipo === "libro"` es opaco para el motor de andar, igual
+  // que `"cartela"` — quien lo recibe (`andar-nave-app.mjs`) decide que llegar
+  // aquí abre el libro, o pasa página si ya estaba abierto (la máquina de
+  // estados vive en `libro-estado.mjs`/`libro-sesion.mjs`, no en el catálogo
+  // de interacciones).
+  {
+    id: ID_INTERACCION_LIBRO,
+    punto: [...PUNTO_LIBRO],
+    orientacion: ORIENTACION_LIBRO,
+    accion: { tipo: "libro", pieza: ID_LIBRO_CLASICO },
   },
 ]);
 

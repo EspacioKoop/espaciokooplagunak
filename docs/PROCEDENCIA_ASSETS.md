@@ -275,6 +275,43 @@ El PNG de origen **no entra en el repositorio**, igual que los STL de la
 sección anterior: se descarga aparte, se verifica su licencia y su sha256, y lo
 que se versiona es `foundry-module/data/tokens/<id>.mjs` — texto, revisable en
 un PR como cualquier otro cambio.
+---
+
+## El libro interactuable del museo (#853) — sin ficha, y por qué
+
+No hay entrada de tabla aquí porque no hay **archivo** que fichar: el libro 3D
+del museo (`foundry-module/scripts/libro-catalogo.mjs`) no importa ningún
+escaneo, fotografía ni fichero de terceros. Sus páginas son mancha tipográfica
+generada por `libro-pagina.mjs` (rejilla + `chapasDeRejilla`, la misma
+maquinaria de la piel pixelart del módulo, #526/#838: nunca una letra
+legible), y su geometría sale de `libro-geometria.mjs`. Cero binarios, cero
+licencia de terceros que declarar.
+
+La cartela sí **nombra** una obra clásica real como homenaje narrativo — los
+aguafuertes que Gustave Doré hizo para *La Divina Comedia* (1861), hoy de
+dominio público en todo el mundo—, pero eso es contenido de la cartela, no
+procedencia de un archivo: no se ha copiado, escaneado ni redibujado ni un
+píxel de esa edición. Por eso `provenance.kind` en `libro-catalogo.mjs` es
+`"original"` (obra propia del módulo) y no `"cc"`: la trampa de la primera
+sección de este documento —"que la obra sea de dominio público no implica que
+el archivo lo sea"— corre al revés aquí, y merece decirse igual de claro: que
+la mancha se INSPIRE en una obra de dominio público no la convierte en una
+reproducción de esa obra, así que no hace falta (ni corresponde) una ficha de
+licencia para ella.
+
+**Y no es `interpretacion`,** la naturaleza que #836 añadió para los cuadros de
+la sección siguiente. La distinción es justo la que separa a los dos: un cuadro
+redibuja una COMPOSICIÓN concreta e identificable, y llamarla propia sería
+enseñar la obra de otro sin decirlo; la mancha de una página no redibuja nada
+—no hay una página de Doré de la que salga—, así que aquí no hay composición
+ajena que declarar. Que la cartela cite a Doré es contenido de la cartela.
+
+Si algún día este libro —o cualquier otro— reproduce de verdad un archivo de
+terceros (una página escaneada, una tipografía con licencia propia), esa
+entrada sí necesita su ficha completa aquí, con el mismo rigor que las de
+arriba; y si llega a redibujar una lámina concreta, su naturaleza pasa a ser
+`interpretacion`, con la fila que eso exige.
+
 ## Packs 3D de terceros — cuatro packs acreditados (#1052)
 
 Cuatro directorios, no piezas sueltas convertidas a malla de texto como las de

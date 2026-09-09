@@ -37,6 +37,9 @@ import "./museo-cuadros.mjs";
 import "./pasillo-recuerdos-piezas.mjs";
 import { resolverAsiento } from "./nave-asiento.mjs";
 import { ponerPose } from "./nave-pose.mjs";
+import { resolverInvestigacion, PROCEDENCIA_SRD_TEXTO } from "./libro-srd-investigacion.mjs";
+import { marcadorLibroMuseo } from "./museo-escena.mjs";
+import { rollD20 } from "./dado-util.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./ship-view/telemetria-difusion.mjs";
 import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
 
@@ -277,6 +280,11 @@ function arrancar(raiz, estanciaPedida = null) {
   // posición, pero nunca supo que existen "estancias" con nombre — ese
   // conocimiento es de este archivo y del catálogo, no del bucle.
   let estanciaActual = arranque.estancia;
+  // Marcador efímero del resultado de investigar el libro SRD (#1037): no se
+  // persiste en ningún documento, solo vive mientras dura la interacción — se
+  // pone al resolver una tirada y se retira en `alSalirDeInteraccion`, igual
+  // que la cartela.
+  let marcadorInvestigacionActual = null;
 
   /**
    * Rotula en qué sala estás (QA: «no sé en qué sala estoy»).
@@ -349,6 +357,39 @@ function arrancar(raiz, estanciaPedida = null) {
     escribir("[data-cartela-texto]", cartela.texto);
     escribir("[data-cartela-credito]", cartela.credito);
     nodo.hidden = false;
+  }
+
+  function pintarInvestigacion(visible) {
+    const panel = raiz?.querySelector?.("[data-andar-investigacion]");
+    if (!panel) return;
+    panel.hidden = !visible;
+    const cartela = raiz?.querySelector?.("[data-andar-cartela]");
+    if (cartela && visible) cartela.hidden = false;
+    if (!visible) return;
+    // Atribución obligatoria (ADR-0013): la mecánica que resuelve la tirada
+    // viene del SRD 5.1, y su crédito se muestra en cuanto se abre el panel,
+    // no solo tras resolver — es la misma disciplina que la cartela de una
+    // pieza del museo.
+    const credito = raiz?.querySelector?.("[data-cartela-credito]");
+    if (credito) credito.textContent = PROCEDENCIA_SRD_TEXTO;
+    const resultado = panel.querySelector?.("[data-investigacion-resultado]");
+    panel.querySelectorAll?.("[data-investigacion-habilidad]").forEach((boton) => {
+      boton.onclick = () => {
+        const tirada = rollD20();
+        const prueba = resolverInvestigacion({ habilidad: boton.dataset.investigacionHabilidad, dc: 12, tiradas: [tirada] });
+        if (resultado) {
+          const claveEstado = prueba.exito ? "LAGUNAK.AndarNave.Investigacion.Exito" : "LAGUNAK.AndarNave.Investigacion.Fallo";
+          const claveHabilidad = `LAGUNAK.AndarNave.Investigacion.${prueba.habilidad.charAt(0).toUpperCase()}${prueba.habilidad.slice(1)}`;
+          const estado = game.i18n?.localize?.(claveEstado) ?? (prueba.exito ? "Éxito" : "Fallo");
+          const habilidad = game.i18n?.localize?.(claveHabilidad) ?? prueba.habilidad;
+          resultado.textContent = `${estado}: ${habilidad} ${prueba.total}/${prueba.dc}`;
+        }
+        // Marcador efímero (#1037): solo tiene sentido en el museo, donde
+        // vive `LIBRO_MUSEO` — la sala de pruebas standalone (`libro-escena.mjs`)
+        // usa otro tipo de acción (`libro-toggle`) y nunca llega aquí.
+        if (estanciaActual === "museo") marcadorInvestigacionActual = marcadorLibroMuseo(prueba);
+      };
+    });
   }
 
   let ultimoSelloEnviado = null;
@@ -466,6 +507,9 @@ function arrancar(raiz, estanciaPedida = null) {
     // nuevo, solo se conecta lo que ya circulaba.
     aviso: () => game.settings?.get?.(MODULE_ID, AJUSTE_NIVEL_ALERTA) ?? null,
     saludSistemas: () => aceptarTelemetria(sobreTelemetria())?.systems ?? null,
+    // El resultado de investigar el libro SRD (#1037): efímero, se pide
+    // fresco en cada fotograma y se retira solo en `alSalirDeInteraccion`.
+    marcador: () => marcadorInvestigacionActual,
     componer: inicial.componer,
     planta: inicial.planta,
     puertas: inicial.puertas,
@@ -511,6 +555,12 @@ function arrancar(raiz, estanciaPedida = null) {
     // ajena no enseña nada que el relé no dejara ver igualmente por botón.
     alAlcanzarInteraccion: (interaccion) => {
       const { accion } = interaccion;
+      // El bucle pasa directamente de una interacción a otra, sin emitir
+      // salida intermedia. La cartela vecina también termina la lectura SRD.
+      if (accion?.tipo !== "investigar-libro") {
+        pintarInvestigacion(false);
+        marcadorInvestigacionActual = null;
+      }
       if (accion?.tipo === "consola") openWorkspaceApp(accion.puesto);
       // Un asiento NO sienta a nadie al pasar por delante: solo se recuerda cuál
       // se tiene al alcance, y sentarse es un gesto aparte (`f`). Es la
@@ -525,6 +575,7 @@ function arrancar(raiz, estanciaPedida = null) {
       // El texto sale del catálogo —que es el dato— y solo el nombre de la
       // naturaleza sale de i18n, que es interfaz.
       else if (accion?.tipo === "cartela") pintarCartela(accion.pieza);
+      else if (accion?.tipo === "investigar-libro") pintarInvestigacion(true);
       // Un punto que lleva a otra estancia (#587: la cabina de teléfono de la
       // playa devuelve a la nave). Reusa EXACTAMENTE el camino de una puerta en
       // vez de tener su propio salto: cambiar de estancia ya está resuelto, y
@@ -545,6 +596,11 @@ function arrancar(raiz, estanciaPedida = null) {
     alSalirDeInteraccion: () => {
       pintarCartela(null);
       asientoAlAlcance = null;
+      pintarInvestigacion(false);
+      // El marcador es de la interacción, no de la sala: se retira al
+      // apartarse igual que la cartela, no cuando pasa un tiempo ni cuando
+      // se cambia de estancia por otra vía.
+      marcadorInvestigacionActual = null;
     },
     // El de la estancia de ARRANQUE, no el de la nave (#587). Sin esto, abrir
     // directamente en un exterior pintaba su cielo con el gris de entre salas y

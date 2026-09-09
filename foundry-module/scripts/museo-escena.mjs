@@ -75,6 +75,22 @@ import { deformarPieza } from "./estatua-rig.mjs";
 import { CATALOGO_CUADROS } from "./museo-cuadros.mjs";
 import { ALTO_TOTAL, ANCHO_TOTAL, piezasCuadro } from "./museo-cuadro.mjs";
 
+import { libroGeometria } from "./libro-geometria.mjs";
+import { marcadorInvestigacion } from "./libro-srd-investigacion.mjs";
+
+/** Primer consumidor 3D del adaptador SRD: un libro abierto, sin persistencia. */
+export const LIBRO_MUSEO = Object.freeze({
+  centro: Object.freeze([1.25, 0.82, 1.45]),
+  accion: Object.freeze({ tipo: "investigar-libro", habilidades: ["investigacion", "historia", "arcana"] }),
+});
+
+function trasladarMalla(malla, [dx, dy, dz]) {
+  return {
+    ...malla,
+    vertices: malla.vertices.map(([x, y, z]) => [x + dx, y + dy, z + dz]),
+  };
+}
+
 /* ---- medidas de la sala ---------------------------------------------------- */
 
 /**
@@ -601,6 +617,13 @@ export const ENTRADA = Object.freeze({ x: ANCHO / 2, z: Z_ENTRADA, yaw: 0 });
 
 function mobiliario() {
   const piezas = [];
+  piezas.push({
+    malla: trasladarMalla(libroGeometria(Math.PI / 2, Math.PI / 4), LIBRO_MUSEO.centro),
+    centro: [...LIBRO_MUSEO.centro],
+    medidas: [0.4, 0.3, 0.2],
+    color: MUSEO.piedra,
+    colision: false,
+  });
   for (const colocada of PIEZAS_COLOCADAS) {
     const [x, , z] = colocada.centro;
     piezas.push({
@@ -652,6 +675,12 @@ function mobiliario() {
  * ficha; nadie más necesita saber qué es un museo.
  */
 export const INTERACCIONES = declararInteracciones([
+  {
+    id: "libro-srd-museo",
+    punto: [LIBRO_MUSEO.centro[0], LIBRO_MUSEO.centro[2] + 0.45],
+    orientacion: 0,
+    accion: LIBRO_MUSEO.accion,
+  },
   ...PIEZAS_COLOCADAS.map((colocada) => ({
     id: `pieza-${colocada.pieza.id}`,
     punto: [...colocada.mirador],
@@ -671,6 +700,26 @@ export const INTERACCIONES = declararInteracciones([
     accion: { tipo: "estancia", estancia: "cantina" },
   },
 ]);
+
+/**
+ * Proyección efímera del resultado junto al libro; el núcleo no lo recuerda.
+ *
+ * `+0.45` en Y, no `+0.2`: la interacción dispara solo por proximidad
+ * (`interaccionAlAlcance`, sin comprobar hacia dónde mira quien la alcanza),
+ * así que quien resuelve la tirada está a poco más de un radio de
+ * interacción (`RADIO_INTERACCION` = 1,2 m) del libro. A esa distancia y con
+ * `recorteLateral: true`, un marcador a solo 0,2 m por encima del libro
+ * (y = 1,02, casi a la altura de la mesa) cae fuera del cono vertical de la
+ * cámara — la mitad vertical visible a ~0,45 m de profundidad es de apenas
+ * 0,27 m, y la caída desde la altura de ojos (1,45 m) hasta 1,02 m es de
+ * 0,43 m: por debajo del corte, invisible. A +0,45 (y ≈ 1,27) el marcador
+ * queda dentro de ese cono para las orientaciones con las que de verdad se
+ * llega a leerlo (medido: visible con `recorteLateral` activo mirando hacia
+ * el libro desde el punto de interacción declarado en `INTERACCIONES`).
+ */
+export function marcadorLibroMuseo(resultado) {
+  return marcadorInvestigacion(resultado, [LIBRO_MUSEO.centro[0], LIBRO_MUSEO.centro[1] + 0.45, LIBRO_MUSEO.centro[2]]);
+}
 
 const SALA = crearSalaCaja({
   ancho: ANCHO,

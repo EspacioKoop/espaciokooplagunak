@@ -281,7 +281,7 @@ test("v12: _prepareContext agrupa las estancias por categoría, los bancos de pr
     assert.ok(bancoDePruebas, "falta la categoría de bancos de pruebas");
     assert.deepEqual(
       bancoDePruebas.estancias.map((e) => e.id).sort(),
-      ["arena", "museo", "playa"],
+      ["arena", "libro", "museo", "playa"],
       "los bancos de pruebas GM-only son ésos, y ninguna sala andable se cuela entre ellos",
     );
     const nave = contexto.categorias.find((c) => c.id === "nave");

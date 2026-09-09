@@ -37,9 +37,9 @@ export const CODIGOS = Object.freeze({
 const HOST_CREATIVE_COMMONS = "creativecommons.org";
 
 const PATRONES_RUTA = [
-  { patron: /^\/publicdomain\/zero\/[0-9.]+\/?$/i, codigo: CODIGOS.CC0 },
-  { patron: /^\/licenses\/by-nc\/[0-9.]+\/?$/i, codigo: CODIGOS.CC_BY_NC },
-  { patron: /^\/licenses\/by\/[0-9.]+\/?$/i, codigo: CODIGOS.CC_BY },
+  { patron: /^\/publicdomain\/zero\/1\.0\/?$/i, codigo: CODIGOS.CC0 },
+  { patron: /^\/licenses\/by-nc\/(?:1\.0|2\.0|2\.5|3\.0|4\.0)\/?$/i, codigo: CODIGOS.CC_BY_NC },
+  { patron: /^\/licenses\/by\/(?:1\.0|2\.0|2\.5|3\.0|4\.0)\/?$/i, codigo: CODIGOS.CC_BY },
 ];
 
 /**

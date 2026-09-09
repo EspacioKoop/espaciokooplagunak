@@ -2,6 +2,17 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CODIGOS, clasificarLicencia } from "../scripts/sonido-freesound/filtro-licencia.mjs";
 
+test("versiones no reconocidas fallan cerrado aunque el host sea oficial", () => {
+  for (const ruta of ["licenses/by/999/", "licenses/by/4.1/", "licenses/by/.../", "publicdomain/zero/4.0/"]) {
+    const r = clasificarLicencia(`https://creativecommons.org/${ruta}`);
+    assert.equal(r.codigo, CODIGOS.DESCONOCIDA);
+    assert.equal(r.mostrable, false);
+  }
+  for (const version of ["1.0", "2.0", "2.5", "3.0", "4.0"]) {
+    assert.equal(clasificarLicencia(`https://creativecommons.org/licenses/by/${version}/`).codigo, CODIGOS.CC_BY);
+  }
+});
+
 test("CC0 se clasifica y se muestra", () => {
   const r = clasificarLicencia("http://creativecommons.org/publicdomain/zero/1.0/");
   assert.equal(r.codigo, CODIGOS.CC0);

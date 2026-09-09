@@ -21,7 +21,7 @@
 
 import { crearCatalogoEstancias } from "./nave-estancias.mjs";
 import { declararInteracciones } from "./nave-interaccion.mjs";
-import { MUSEO, PASILLO, PLAYA, SECCION } from "./paleta.mjs";
+import { ESTUDIO, MUSEO, PASILLO, PLAYA, SECCION } from "./paleta.mjs";
 import { puntoLibreCerca } from "./nave-movimiento.mjs";
 import { crearSalaCaja } from "./nave-sala-caja.mjs";
 import { piezasConsola } from "./nave-consola.mjs";
@@ -50,12 +50,27 @@ import {
   PLANTA_MUSEO,
   componerMuseo,
 } from "./museo-escena.mjs";
+import { PLANTA_LIBRO, componerLibro, ENTRADA, INTERACCIONES } from "./libro-escena.mjs";
+import {
+  PLANTA_ARENA,
+  ENTRADA as ENTRADA_ARENA,
+  INTERACCIONES as INTERACCIONES_ARENA,
+  componerArena,
+  cierreDe,
+  CIERRE_POR_DEFECTO,
+} from "./arena-combate-escena.mjs";
 import {
   ENTRADA as ENTRADA_PASILLO,
   INTERACCIONES as INTERACCIONES_PASILLO,
   PLANTA_PASILLO,
   componerPasillo,
 } from "./pasillo-recuerdos-escena.mjs";
+import {
+  ENTRADA as ENTRADA_ESTUDIO,
+  INTERACCIONES as INTERACCIONES_ESTUDIO,
+  PLANTA_ESTUDIO,
+  componerEstudio,
+} from "./estudio-escena.mjs";
 import {
   ANCHO_PUERTA,
   GROSOR_PUERTA,
@@ -434,6 +449,21 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     fondo: MUSEO.zocalo,
     puertas: [],
   },
+  // La arena de combate (#1013). Como la playa y el museo: NO cuelga de ninguna
+  // puerta de la nave —el Phobos no lleva un campo de batalla dentro— y se entra
+  // por herramienta. Treinta por veinte casillas de cinco pies, enteras
+  // jugables: lo que se comprueba aquí es que el borde CIERRA y que cruzarla se
+  // siente como una distancia.
+  arena: {
+    planta: PLANTA_ARENA,
+    componer: componerArena,
+    entrada: ENTRADA_ARENA,
+    interacciones: INTERACCIONES_ARENA,
+    // Exterior: detrás de la geometría hay cielo, y el cierre declara cuál —una
+    // mazmorra se funde hacia su propia piedra, no hacia un cielo azul.
+    fondo: cierreDe(CIERRE_POR_DEFECTO).cielo,
+    puertas: [],
+  },
   // El pasillo de los recuerdos. Como el museo y la playa: NO cuelga de
   // ninguna puerta de la nave y se entra por herramienta.
   "pasillo-recuerdos": {
@@ -444,16 +474,47 @@ export const CATALOGO_ANDAR = crearCatalogoEstancias({
     fondo: PASILLO.marmol,
     puertas: [],
   },
+  // La estancia del libro interactuable (#853): banco de pruebas solo-GM del
+  // libro 3D, como la playa lo es del motor de exteriores. NO es el libro que
+  // se ve en el museo (`museo-escena.mjs` lo coloca directamente en su propia
+  // planta con su propia interacción `libro-srd-museo`): esta es una sala
+  // aparte de 2x2 m para probar la geometría y la interacción sin el resto
+  // del mobiliario del museo alrededor. NO cuelga de ninguna puerta de la
+  // nave; se entra por la herramienta solo-GM de la barra de escena.
+  libro: {
+    planta: PLANTA_LIBRO,
+    componer: componerLibro,
+    entrada: ENTRADA,
+    interacciones: INTERACCIONES,
+    // Interior cerrado y sin ventanas: lo que asome por un hueco es más sala sin
+    // pintar, no el vacío. Su propio gris, y no el de mamparo, para que el borde
+    // de la sala no se lea como casco de nave.
+    fondo: 0x808080, // gris pared
+    puertas: [],
+  },
+  // El plató de pruebas (#584, opción B). Como el museo y la playa: NO cuelga
+  // de ninguna puerta de la nave y se entra por la herramienta solo-GM de la
+  // barra de escena. Es el único sitio del módulo con la piel del muro
+  // texturada de serie y focos declarados — ver la cabecera de
+  // `estudio-escena.mjs`.
+  estudio: {
+    planta: PLANTA_ESTUDIO,
+    componer: componerEstudio,
+    entrada: ENTRADA_ESTUDIO,
+    interacciones: INTERACCIONES_ESTUDIO,
+    fondo: ESTUDIO.suelo,
+    puertas: [],
+  },
 });
 
 /**
  * Ids que NO salen de la rejilla de la nave (`SALAS_PHOBOS`): bancos de
  * pruebas solo-GM que se entran por herramienta de la barra de escena, no
- * andando (#587 playa, #598 museo). Se declaran aquí y no en una lista
- * aparte de `categoriasAndar`, para que añadir uno nuevo no obligue a
+ * andando (#587 playa, #598 museo, #853 libro). Se declaran aquí y no en una
+ * lista aparte de `categoriasAndar`, para que añadir uno nuevo no obligue a
  * mantener dos sitios sincronizados.
  */
-const IDS_FUERA_DE_LA_NAVE = Object.freeze(["playa", "museo"]);
+const IDS_FUERA_DE_LA_NAVE = Object.freeze(["playa", "museo", "arena", "libro"]);
 
 /**
  * Agrupa el catálogo por categoría, para presentarlo como carpetas en una UI

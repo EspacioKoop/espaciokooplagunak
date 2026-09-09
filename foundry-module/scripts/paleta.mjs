@@ -31,7 +31,28 @@
  * usaban los tres módulos; este archivo los reúne, no los rediseña.
  */
 
+/** Colores del prototipo de tarjetas (#1030), sin cambiar su apariencia. */
+export const CARTA_COMBATIENTE = Object.freeze({
+  humano: Object.freeze({ marco: "#c9b48a", acento: "#f0e4c4" }),
+  elfo: Object.freeze({ marco: "#8fa3d9", acento: "#d8f3dc" }),
+  enano: Object.freeze({ marco: "#c8a24a", acento: "#ffe8a3" }),
+  agotamiento: "#ff8f9d",
+  fondo: "#141b33",
+  interior: "#0b0f18",
+  texto: "#f4e8c8",
+  bando: "#8fa3d9",
+});
+
 /** Lenguajes disponibles, para que un consumidor pueda declarar el suyo. */
+// Colores conservados del prototipo de turnos (#1012), centralizados sin
+// certificar su aceptación artística ni cambiar el resultado SVG.
+export const TURNO_CARTAS = Object.freeze({
+  ventaja: "#ffff00",
+  concentracion: "#ff00ff",
+  muerto: "#808080",
+  agotamiento: "#d1495b",
+});
+
 export const LENGUAJES = Object.freeze(["grabado", "pixel"]);
 
 /**
@@ -724,6 +745,24 @@ export const CUADRO = Object.freeze({
 
 
 /**
+
+ * El plató del estudio (#584, banco de pruebas de la opción B): una sala de
+ * fondo NEUTRO y oscuro a propósito, porque lo que hay que ver aquí es cómo
+ * cae la luz de los focos sobre el paño texturado del muro, y un color de
+ * fondo con carácter propio competiría con eso.
+ */
+export const ESTUDIO = Object.freeze({
+  muro: "#26282d", // gris casi neutro, un pelo más oscuro que el del museo
+  suelo: "#1c1e22", // el tablero del plató: oscuro, para que no rebote luz sola
+  atril: "#3a3d43", // la silla y el trípode: metal apagado, ni protagoniza ni desaparece
+  atrilCanto: "#54575f", // su filo, un paso más claro: lo justo para leer el volumen
+  claqueta: "#17181b", // el cuerpo de la claqueta: casi negro, como el atrezo de verdad
+  claquetaFranja: "#e8e2d2", // sus franjas: el único blanco hueso de la sala
+  pieFoco: "#2a2c30", // el pie de cada lámpara: silueta, no protagonista
+  pantallaFoco: "#c7c2b3", // la pantalla del foco: lo único emisivo de la sala
+});
+
+/**
  * Fichas de la mesa de minijuegos (#308). Pixel, no grabado: la pila se repinta
  * en cuanto alguien apuesta.
  *
@@ -755,6 +794,23 @@ export const TARJETA_COMBATIENTE = Object.freeze({
     ventaja: "#62c370",
     muerto: "#22252b",
   }),
+});
+
+/**
+ * Insignias de progresión de campaña (#1016): un acento por nivel de hito
+ * alcanzado. Único sitio que declara estos hexadecimales (ADR-0014);
+ * `progresion-campana.mjs` los consume por nivel en vez de mantener su
+ * propia tabla.
+ *
+ * El oro NO se reescribe: el nivel máximo de progresión y el marco `shiny` de
+ * la tarjeta de combatiente son la misma insignia vista desde dos sitios, y
+ * dos literales idénticos en este mismo archivo es como se desincronizan.
+ */
+export const PROGRESION = Object.freeze({
+  plain: "#8a918f",
+  bronze: "#d28b45",
+  silver: "#c4ccd1",
+  gold: TARJETA_COMBATIENTE.shiny.marco,
 });
 
 export const FICHA = Object.freeze({
@@ -823,3 +879,28 @@ export function contraste(a, b) {
   if (la === null || lb === null) return null;
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
+
+export const BOSQUE = Object.freeze({
+  tronco: "#5b4632", // corteza en sombra, que es como se ve un tronco casi siempre
+  troncoSol: "#7a6046", // la banda del tronco a la que sí llega la luz
+  follaje: "#3f5f39", // la copa, verde apagado: ni esmeralda ni oliva
+  follajeSol: "#5d7f47", // lo alto de la copa, donde da el sol
+  follajeSombra: "#2b4229", // lo de debajo y lo del fondo de la arboleda
+  hojarasca: "#6b5a3c", // el suelo bajo los árboles, tierra con hoja caída
+  // Los DOS tonos del suelo de un claro. Muy juntos a propósito: alternarlos por
+  // casilla da escala —se ve cuánto es un paso sin que nadie lo diga— y con dos
+  // colores separados el suelo dejaría de ser suelo para leerse como una
+  // alfombra de rayas. Es el mismo criterio que la junta de suelo de #552, que
+  // tiene que ser una línea un punto más clara y solo un punto.
+  suelo: "#4e5c34", // hierba pisada de claro
+  sueloClaro: "#57663a", // la franja de al lado, apenas un punto por encima
+  // El terreno de más allá de la linde. Más apagado y más frío que el claro: es
+  // el mismo bosque visto a través de aire, que es lo que hace la perspectiva
+  // aérea antes incluso de que entre la niebla del motor.
+  lejania: "#46543a",
+  seco: "#8a7b52", // ramas muertas y helecho pasado: rompe el verde continuo
+  tocon: "#6a563d", // el corte de un tronco caído, más claro que su corteza
+});
+
+// Señal efímera del libro SRD (#1037).
+export const INVESTIGACION_SRD = Object.freeze({ exito: "#8bd450", fallo: "#d45050" });

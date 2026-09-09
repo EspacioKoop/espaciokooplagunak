@@ -339,6 +339,9 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     // tripulación en la misma barra que su puesto diría que forma parte del juego.
     "lagunak-playa",
     "lagunak-museo",
+    // El plató (#584): banco de pruebas del rig de focos de #556 sobre la
+    // piel texturada del muro, mismo motivo que la playa y el museo.
+    "lagunak-estudio",
     // La cantina (#423) la ven todos: es la capa social, y un minijuego al que
     // solo pudiera entrar el GM no sería un minijuego. Es la única puerta: los
     // dos verticales (#308 póker, #413 dados) entran por ella, no por un botón
@@ -360,6 +363,7 @@ test("v11 conecta los listeners de pausa y reanudación con el puente", async ()
     // jugador no le dice nada y le invitaría a pedir cambios en la instalación
     // de otro.
     "lagunak-contenido-externo",
+    "lagunak-importar-atlas",
     // Echar una mano (#309) la ve TODA la tripulación, GM incluido: ayudar es
     // cruzar de puesto por definición, y un botón solo-GM no sería cooperación.
     "lagunak-asistencia",
@@ -1310,3 +1314,36 @@ test("cerrar una ventana que ya no es la vigente no deja huérfana a la nueva", 
   assert.equal(segunda.renderCalls.length, 1, "la vigente sigue viva");
   await segunda.close();
 });
+
+for (const modern of [false, true]) {
+  test(`${modern ? "V2" : "V1"}: convocatoria confirmada abre, navega en caliente y reabre con instancia nueva`, async () => {
+    const { hooks, instances, fetchCalls } = await loadModule({ modern, isGM: false });
+    await arrancarReady(hooks);
+    const setting = { key: "espaciokoop-lagunak.convocatoria-estancia", value: { estancia: "museo" } };
+    // El arnés no renderiza Canvas ni simula servidor: verifica el callback
+    // real inyectado desde main y el despacho público de Application V1/V2.
+    hooks.createSetting(setting);
+    const primera = instances.at(-1);
+    assert.equal(primera.estanciaPedida, "museo");
+    assert.deepEqual(primera.renderCalls, [modern ? { force: true } : true]);
+    let paradas = 0;
+    const viajes = [];
+    primera.mando = { irA: e => viajes.push(e), detener: () => { paradas++; } };
+    hooks.createSetting(setting);
+    assert.equal(instances.at(-1), primera);
+    assert.deepEqual(viajes, ["museo"]);
+    assert.equal(primera.estanciaPedida, "museo");
+    assert.deepEqual(primera.renderCalls.at(-1), modern ? { force: true } : true);
+    if (modern) primera._onClose({});
+    await primera.close();
+    assert.equal(paradas, 1);
+    assert.equal(primera.mando, null);
+    hooks.createSetting(setting);
+    const segunda = instances.at(-1);
+    assert.notEqual(segunda, primera);
+    assert.equal(segunda.estanciaPedida, "museo");
+    assert.deepEqual(segunda.renderCalls, [modern ? { force: true } : true]);
+    assert.deepEqual(fetchCalls, [], "la convocatoria no usa el puente ni requiere token del jugador");
+    await segunda.close();
+  });
+}

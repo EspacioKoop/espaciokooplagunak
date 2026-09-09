@@ -19,7 +19,9 @@ condicionan el trabajo diario:
   guardas) los toca casi cualquier trabajo del módulo, y ahí es donde chocan dos ramas que por lo
   demás no se rozan. Los agentes especializados del proyecto van versionados en
   [`.claude/agents/`](.claude/agents); los agentes seleccionables desde VS Code viven en
-  [`.github/agents/`](.github/agents).
+  [`.github/agents/`](.github/agents). Los procedimientos que se repiten —triar una entrega del
+  enjambre, escribir un encargo, atender una revisión, medir la telemetría, etiquetar— van como
+  skills en [`.claude/skills/`](.claude/skills): úsalas en vez de reinventar el procedimiento.
 - No afirmes que algo compila, arranca o funciona si no has ejecutado la comprobación correspondiente.
 - Nada de `push --force`, `reset --hard`, squash del historial heredado ni reescritura de historial
   sin autorización humana explícita.
@@ -265,7 +267,16 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     es hoy por centroide de cara y es la deuda viva de #510 —empata entre caras que se tocan, que
     es el parpadeo que ve QA—; lo ya intentado y descartado (epsilon con orden estable; Newell sin
     partir caras, que empeora la medida) está escrito en la cabecera de `retro3d.mjs` para no
-    repetirlo por cuarta vez. El arte de ficha de
+    repetirlo por cuarta vez. Para ver lo que este motor dibuja de VERDAD —no una maqueta con su
+    propia proyección— está el banco de pruebas de `tools/banco-3d/` (#976): `index.html`/`app.mjs`
+    importan `retro3d.mjs`/`retro3d-lienzo.mjs` por ESM y pintan en un `<canvas>` real con controles
+    de malla, época, giro de cámara y fase de marcha; `capturar.mjs` sirve esa página con
+    `servidor.mjs` (HTTP nativo, sin dependencias) y la abre con el Playwright ya instalado en
+    `tools/e2e-visual` (reutilizado por `createRequire`, no una segunda copia) para guardar un PNG
+    por ángulo. Las cinco reglas geométricas de #976/#974 (caras no rectangulares, proporción,
+    pie plantado, huellas, silueta por clase) son predicados puros en
+    `tools/comprobaciones-avatar.mjs`, probados con `node --test` sobre casos sintéticos — la
+    geometría de avatar en sí (hoy cajas en `tools/banco-figura.mjs`) sigue siendo #974. El arte de ficha de
     naves narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
     `scripts/png-indexado.mjs`) se genera **solo por clic del GM** y escribe el token prototipo:
     nunca sondea ni sincroniza posición, porque un documento persistente que espeje la simulación
@@ -600,12 +611,31 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     sección, #508) manda sobre el checkpoint guardado, y un id que el catálogo no conoce cae al
     siguiente escalón en vez de dejar a nadie en la nada—, y esa decisión vive en el catálogo porque
     es sobre el catálogo, no en la ventana que la aplica.
+    La **convocatoria** (#832) es el disparador de esa geografía para las estancias
+    que no cuelgan de ningún mamparo —la playa y el museo—: `convocatoria-estancia.mjs`
+    resuelve dónde aterriza la tripulación, `convocatoria-difusion.mjs` lo difunde y
+    `convocatoria-app.mjs` es la ventana, que entra como una entrada más del
+    catálogo del panel de GM y no como botón nuevo. Dos reglas: viaja por **ajuste de mundo y no
+    por socket** —`game.socket` no acredita a quien emite, así que una llamada por ahí
+    sería falsificable, mientras que Foundry exige el permiso `SETTINGS_MODIFY`
+    para persistir el ajuste de mundo; el emisor cooperativo comprueba además el rol GM—,
+    y **no se aplica al cargar**, al revés que el nivel de
+    alerta: una alerta es un estado sostenido que quien entra tarde debe ver, una
+    convocatoria es un momento, y aplicarla al conectarse arrastraría a la playa a quien
+    llega dos horas después. La ventana sigue listando el catálogo entero: limitar
+    los destinos a estancias que no cuelgan de ningún mamparo es trabajo pendiente
+    de #832, no una regla ya en vigor.
   - **Catálogos con procedencia, y el museo** — `scripts/procedencia-catalogo.mjs` es la ÚNICA
     regla de licencia del módulo (#598): qué es una procedencia aceptable, con errores tipados por
-    `code` + `path`. La consumen el atlas (`catalogo-cosmografico.mjs`, #525, que sigue siendo
-    cimiento sin cablear a la espera de #213) y el catálogo de piezas (`catalogo-piezas.mjs`), y esa
-    unificación es el punto: dos validadores de licencia se desincronizan, y una licencia
-    desincronizada no es un fallo de forma. `catalogo-piezas.mjs` es lo que faltaba para unir las dos
+    `code` + `path`. La consumen el atlas (`catalogo-cosmografico.mjs`, #525) y el catálogo de
+    piezas (`catalogo-piezas.mjs`), y esa unificación es el punto: dos validadores de licencia se
+    desincronizan, y una licencia desincronizada no es un fallo de forma. El atlas **ya no es
+    cimiento** (#634): `importador-atlas.mjs` une la cadena —`atlas-hyg.mjs` adapta el catálogo
+    estelar HYG al formato y `catalogo-cosmografico.mjs` lo valida— y `atlas-importar-ventana.mjs`
+    le da la entrada standalone solo-GM desde la que se importa. Lo cableado es la MAQUINARIA y no
+    el contenido: la ventana importa lo que el GM le dé, así que no mete en la partida ninguna
+    decisión de #213, que sigue siendo una investigación abierta sobre QUÉ atlas.
+    `catalogo-piezas.mjs` es lo que faltaba para unir las dos
     mitades que #590 y #525 habían dejado sin hablarse — texto con procedencia por un lado, malla con
     procedencia por otro—: una ficha declara `malla`, y el validador exige que ese ID exista de
     verdad (el registro se le pasa desde fuera, así que sigue siendo puro). Su campo `naturaleza`
@@ -613,7 +643,13 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     metadato: es lo que impide que una cartela diga «así era» de una pieza que es una reconstrucción
     hecha después de que destruyeran el original, o que llame mármol a un vaciado en yeso. El crédito
     de la cartela se **deriva** de la procedencia y no se escribe al lado, misma regla que el cartel
-    de reglas del blackjack (#553). La **sala del museo** (`scripts/museo-escena.mjs` +
+    de reglas del blackjack (#553). Resolver un id de pieza tiene **una sola puerta**
+    (#598): cada catálogo se registra con `registrarCatalogoPiezas` al importarse y quien pinta una
+    cartela pregunta por `getPiezaCatalogada(id)`, sin saber en qué sala vive la pieza. Son ya tres
+    —esculturas, cuadros de la pared (#836) y pasillo de los recuerdos— y con la cascada explícita
+    que había antes, cada consumidor nuevo tenía que acordarse de añadir el suyo; el registro falla
+    en cambio ante un id duplicado entre catálogos, que es lo que dejaría a un consumidor
+    resolviendo la pieza equivocada. La **sala del museo** (`scripts/museo-escena.mjs` +
     `museo-piezas.mjs`, con `MUSEO` en `paleta.mjs`) es su primer consumidor real: tres piezas sobre
     pedestales, andable, solo-GM, con la entrada por herramienta de la barra de escena y la salida
     por un punto de interacción — la misma forma que la playa (#587), y por el mismo motivo (el
@@ -630,6 +666,21 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     `crearSalaCaja`), nunca por un `if` con el nombre de la sala dentro de la fábrica. La celda
     sigue siendo la de la nave: un cuadro baja a 1,25 cm porque su detalle no cabía, y una pared de
     galería no quiere más detalle sino menos.
+    La **arena de combate** (`scripts/arena-combate-escena.mjs` + `combate-rejilla.mjs`, #1013)
+    es el tercer sitio con esa misma forma —solo-GM, se entra por herramienta y se sale por un
+    punto de interacción, fuera de las invariantes de la nave y del minimapa— y por el motivo
+    llevado al extremo: 30 × 20 casillas de cinco pies son 45,7 × 30,5 m, y eso no cabe dentro de
+    una fragata. Lo que viene a comprobar es si un combate en rejilla se puede **jugar andando por
+    dentro** y no solo desde arriba: un tablero se ve de un vistazo, cruzarlo a pie tarda, y esa
+    diferencia es justo lo que ninguna vista cenital enseña — por eso la medida es el contenido y
+    no un parámetro. El borde **se declara** en vez de disimularse: el cierre es un dato
+    (`arboleda`, `mazmorra`) y no un muro invisible, porque un límite por el que no se pasa tiene
+    que ser algo que el sitio ya tendría. La rejilla vive aparte y en CASILLAS
+    (`combate-rejilla.mjs`: alcance, línea, ocupación); la escena hace la única traducción a metros
+    que hace falta, en un solo sitio. El presupuesto medido está en la cabecera del módulo, y su
+    reparto es la lección: el claro cuesta ~2100 polígonos igual con 4 cuerpos que con 32, y cada
+    cuerpo añade unos 16 — la población no es el gasto, así que si algún día hay que recortar se
+    recorta arboleda, no combatientes.
     Los **cuadros** de sus muros laterales (#836) son la SEGUNDA forma de colgar y no un parámetro
     de la primera: una escultura se apoya en un pedestal y se rodea, un cuadro cuelga de un muro y
     solo se mira de frente, así que van en catálogo aparte (`museo-cuadros.mjs`) validado por el
@@ -703,6 +754,34 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     —la escena se veía perfecta en una captura y estaba muerta— y que un muro lateral queda
     SIEMPRE en el suelo ambiente de 0,35 porque la luz del motor no le da, así que los cuadros de
     ese lado pierden el color, y como #836 alterna de muro en muro es media colección.
+    La
+    **convocatoria** (`scripts/convocatoria-estancia.mjs`, puro, + el cable
+    `scripts/convocatoria-difusion.mjs`, #689) es lo que hace que el museo no sea decorado para
+    una sola persona: el GM pulsa su botón y la mesa entera aparece dentro. Por el canal viaja
+    el **id de la estancia** y nada más — la posición que calcula el módulo puro se queda en el
+    emisor, donde sirve de acreditación de que la entrada es pisable, porque `resolverArranque`
+    ya deja a quien llega en esa misma `entrada`. Y la forma de abrir la ventana se le **pasa**
+    al registrador desde `main.mjs`: `abrirAndarNave` es local de ahí, y suponerla fue el
+    `ReferenceError` que cerró el PR #675. La playa no convoca (su botón sigue abriendo solo):
+    es un banco de pruebas del motor de exteriores, no contenido. La convocatoria viaja por un
+    **ajuste de mundo** (`scope: "world"`), no un socket crudo (#876): Foundry solo deja escribir
+    un ajuste de mundo a quien tiene permiso de modificar ajustes del juego (el GM), comprobado
+    por el servidor al escribir — la primera versión escuchaba el socket compartido sin acreditar
+    al emisor, y un jugador podía emitir el payload directamente.
+    Lo mismo aplica al **plató de pruebas** (`scripts/estudio-escena.mjs`, con `ESTUDIO` en
+    `paleta.mjs`, #584): solo-GM, sin puerta en la nave, salida por su único punto de interacción. Su
+    razón de ser es otra: es la primera escena del módulo que declara `focos` (luces de punto de
+    #556) y sirve de banco de pruebas visual para la piel del muro TEXTURADA
+    (`scripts/piel-textura.mjs` + `pielMuro: "textura"` en `crearSalaCaja`, opción B de #584). Ese
+    camino es hoy el de TODAS las salas —#930 invirtió el defecto a `"textura"`—, así que la
+    subdivisión no es un experimento aislado: lo que el plató aporta es un sitio donde mirarla con
+    un rig de focos delante. La piel texturada sustituye los
+    cientos de chapas de 10 cm de un muro (#548) por un puñado de cuadros de ~1,5 m
+    (`SUBDIVISION_PANO_METROS` en `nave-sala-caja.mjs`): la rejilla no es para dibujo —eso lo da el
+    téxel, cuatro veces más fino que la caja que sustituye— sino SOLO para que `intensidadCara` (#556)
+    tenga varios centroides donde interpolar una luz de punto; un solo cuadrilátero por cara (la
+    opción A que se descartó) dejaría el muro entero a una intensidad, y las luces de #556 casi
+    decorativas en la superficie que más ocupa el cuadro.
     Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
     acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
     `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,
@@ -831,6 +910,27 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     de la revisión de 2024— se migró a `edicion.mjs`, pero **después** de la lista blanca: aplicado
     antes rechazaba XGE, que es de 2014. No lo reintroduzcas: si buscas un adaptador de plutonium, es
     esto.
+  - **Sonido con Freesound** — `scripts/sonido-freesound/` (#604): buscar, filtrar por licencia libre
+    y ESCUCHAR sin salir de la mesa, con la misma frontera que ya trazó el issue —**audicionar un
+    preview remoto no incorpora nada**; traer un sonido al repositorio sigue pasando por
+    `docs/ASSETS_LIBRES.md` con su ficha de procedencia y sha256, igual que una malla (#590)—. Por eso
+    no hay ningún botón "usar en la escena": como mucho, "preparar ficha"
+    (`adaptador.borradorProcedencia`) escribe un borrador para revisión humana, nunca toca `assets/`.
+    Cuatro capas puras más la ventana: `filtro-licencia.mjs` clasifica la URL de licencia que devuelve
+    la API y **falla cerrado** —CC0 y CC-BY se muestran, CC-BY-NC y cualquier URL irreconocible se
+    descartan, la misma disciplina que `contenido-externo/edicion.mjs`—; `proveedor-freesound.mjs` es
+    el cliente HTTP (`/apiv2/search/`, NO el `/search/text/` deprecado desde noviembre de 2025), con
+    `fetch` inyectado como `bridge-client.mjs`; `adaptador.mjs` (el SoundSearchAdapter que pidió la
+    revisión) normaliza al contrato `{id, title, author, duration, license, previewUrl, sourceUrl}` y
+    vuelve a comprobar la licencia en el cliente aunque la API la filtre en servidor, porque «licencia
+    del sonido» y «términos de uso de la API» son cosas distintas; y `session.mjs` guarda la clave de
+    API solo en memoria y solo para el GM, calcado de `bridge-token-session.mjs` (#183) pero sin su
+    migración legada, que aquí no existe. **No usa `audio-ficheros.mjs`** (#571) a propósito: ese
+    reproductor exige una ficha de procedencia con sha256, que solo se puede calcular sobre un
+    fichero ya descargado, así que audicionar un preview usa un `<audio>` normal del navegador y
+    `audio-ficheros.mjs` sigue esperando a su consumidor real — el mezclador de ambientes de una
+    entrega futura, sobre sonidos ya incorporados. Entra por el catálogo del panel de GM
+    (`panel-gm.mjs`, entrada `sonido`) y no como botón suelto de la barra de escena.
 - `resources/` y `packs/` — assets heredados de upstream.
 - La versión se calcula por fecha (`AAAA.MM.DD`) en `CMakeLists.txt` salvo override explícito.
 - `docs/` — documentación propia del fork: [`BUILDING.md`](docs/BUILDING.md),

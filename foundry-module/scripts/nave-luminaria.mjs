@@ -11,7 +11,21 @@
 // La consecuencia práctica es que ahora una sala grande tiene MÁS luminarias, no
 // una más grande — que además es lo que hace que se lea grande.
 //
-// UNA LUMINARIA ILUMINA, NO SEÑALA. Va en `LUZ_CALIDA` y no en el turquesa de
+// EL PRESUPUESTO DEL HAZ, que es lo que se vuelve a medir antes de subir nada.
+// El cono y el polvo añaden 32 polígonos por sala —fijos: no dependen del
+// tamaño, porque solo las `TOPE_HACES` luminarias más cercanas los llevan— y
+// cuestan un 47% más de tiempo de composición. Medido sobre las trece salas del
+// Phobos, peor caso `maniobra` (22x11 m): 94 polígonos y 6,13 ms antes, 126 y
+// 9,03 ms ahora. Es coste de HAZ y no de piel: descontados esos 32, los dos
+// modos de `pielMuro` dan exactamente los mismos números que antes de que el
+// haz existiera, y `piel-textura.test.mjs` lo comprueba descontándolos.
+//
+// Si algún día no cabe, lo que se recorta es `TOPE_HACES` —cuántas luminarias
+// dibujan su cono— y no `CAPAS_CONO`: menos capas es un degradado más basto en
+// TODOS los haces, mientras que menos haces solo quita los de las lámparas que
+// ya están lejos, que es donde menos se mira.
+//
+// // UNA LUMINARIA ILUMINA, NO SEÑALA. Va en `LUZ_CALIDA` y no en el turquesa de
 // `SECCION.entrable`, que es lo que usaba antes: ese acento marca ventanas,
 // consolas y salas entrables, y gastarlo en un adorno del techo deja a la
 // tripulación sin la única señal que tiene para encontrar lo accionable. Es la

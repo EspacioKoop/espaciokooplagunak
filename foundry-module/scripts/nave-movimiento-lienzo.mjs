@@ -112,6 +112,7 @@ const VELOCIDAD_GIRO = Math.PI * 0.6; // radianes por segundo
  *   otrosJugadores?: () => Array<{x:number, y:number, z:number, avatar?:object}>,
  *   aviso?: () => *,
  *   saludSistemas?: () => Record<string, {health?:number}>|null,
+ *   marcador?: () => {malla:object, color:string}|null,
  * }} opciones
  */
 export function arrancarAndar(lienzo, opciones = {}) {
@@ -143,6 +144,11 @@ export function arrancarAndar(lienzo, opciones = {}) {
     // qué tono le dan a la luminaria lo decide `nave-luminaria.mjs`.
     aviso = () => null,
     saludSistemas = () => null,
+    // Marcador efímero de una interacción puntual (#1037): igual que
+    // `sensores`/`aviso`, se pide fresco en cada fotograma — el bucle solo
+    // lo transporta, quien lo pinta y lo retira al salir de la interacción
+    // es `andar-nave-app.mjs`.
+    marcador = () => null,
     // El letrero de destino de una puerta (#458), flanco de entrada/salida
     // igual que una interacción: se avisa una vez al entrar en el radio y una
     // vez al salir, nunca en cada fotograma mientras se está dentro.
@@ -244,6 +250,7 @@ export function arrancarAndar(lienzo, opciones = {}) {
         rumboNave: rumboNave(),
         aviso: aviso(),
         saludSistemas: saludSistemas(),
+        marcador: marcador(),
         // Reloj de la escena (#587). El bucle YA sabe qué hora es —lo necesita
         // para integrar el movimiento— y hasta ahora se lo guardaba. Sin él una
         // escena solo puede dibujar cosas quietas, y hay ambiente que no se

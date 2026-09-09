@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { ANCHO_TESELA, METROS_POR_TEXEL, teselaMuro, texturaMuro } from "../scripts/piel-textura.mjs";
-import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
+import { ALTURA, SUBDIVISION_PANO_METROS, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
 import { SALAS_PHOBOS, medidasSala } from "../scripts/nave-planta-phobos.mjs";
 import { texturaUtilizable } from "../scripts/retro3d-lienzo.mjs";
 import { MURAL } from "../scripts/paleta.mjs";
@@ -83,11 +83,12 @@ test("cabe de sobra en una paleta indexada", () => {
 
 const MEDIDAS = medidasSala(SALAS_PHOBOS[0]);
 
-function componer(pielMuro) {
+function componer(pielMuro, opciones = {}) {
   const sala = crearSalaCaja({ ...MEDIDAS, puertas: [], mobiliario: [], pielMuro });
   return sala.componer(MEDIDAS.ancho / 2, 0, MEDIDAS.profundidad / 2 - 2, 0.35, {
     ancho: 640,
     alto: 400,
+    ...opciones,
   });
 }
 
@@ -123,8 +124,25 @@ test("el paño mira hacia la sala, no hacia dentro del muro", () => {
 
 test("texturar quita la mayor parte de la geometría de una sala", () => {
   // El número que resolvió #584: la piel del muro era casi toda la sala.
-  const geo = componer("geometria").poligonos.length;
-  const tex = componer("textura").poligonos.length;
+  //
+  // SE DESCUENTA EL HAZ. Desde que las luminarias dibujan su cono y su polvo,
+  // la escena tiene un suelo fijo de polígonos que NINGÚN modo de piel quita
+  // —van con la lámpara, no con el muro— y que se cuela igual en los dos
+  // lados de la división. Medido en la primera sala del Phobos: 32 polígonos
+  // en ambos modos, que sobre 94 de la piel texturada son un tercio. Contarlos
+  // hacía que la rebaja pareciera empeorar de 0,228 a 0,283 sin que la piel
+  // hubiera cambiado ni un polígono: descontados, los dos modos dan
+  // exactamente los mismos 413 y 94 que antes de que existiera el haz.
+  //
+  // Se distinguen por `alpha`: el haz y las motas son lo único traslúcido de
+  // una sala. Si algún día lo es algo más, este filtro deja de valer y hay que
+  // marcar el haz explícitamente.
+  const sinHaz = (piel) => {
+    const poligonos = componer(piel).poligonos;
+    return poligonos.length - poligonos.filter((p) => Number.isFinite(p.alpha)).length;
+  };
+  const geo = sinHaz("geometria");
+  const tex = sinHaz("textura");
   assert.ok(tex < geo / 4, `de ${geo} a ${tex} no es la rebaja que se esperaba`);
 });
 
@@ -134,4 +152,86 @@ test("la tesela se genera una vez por semilla, no una por sala", () => {
   const a = componer("textura").poligonos.find((p) => p.textura).textura;
   const b = componer("textura").poligonos.find((p) => p.textura).textura;
   assert.equal(a, b, "tiene que ser el MISMO objeto, no una copia igual");
+});
+
+/* ---- subdivisión para la luz (#584, opción B) ------------------------------ */
+
+test("el paño no es un solo cuadro: hay varias alturas de suelo distintas", () => {
+  // Es la propiedad que distingue la opción B de la A: si todo el paño fuera un
+  // único cuadrilátero, todos sus polígonos compartirían el mismo par de alturas
+  // (el suelo y `ALTURA`) y `intensidadCara` (#556) los trataría como una sola
+  // superficie con un único centroide — la luz de punto no tendría dónde
+  // interpolar.
+  const texturados = componer("textura").poligonos.filter((p) => p.textura);
+  const alturasDeSuelo = new Set(
+    texturados.map((p) => Math.min(...p.puntos.map((q) => q.y)).toFixed(3)),
+  );
+  assert.ok(
+    alturasDeSuelo.size >= Math.round(ALTURA / SUBDIVISION_PANO_METROS) - 1,
+    `se esperaban varias filas de subdivisión, hay ${alturasDeSuelo.size}: ${[...alturasDeSuelo]}`,
+  );
+});
+
+test("la subdivisión sigue muy por debajo del presupuesto de geometría", () => {
+  // La rejilla gruesa de la opción B tiene más cuadros que un único paño por
+  // cara, pero el punto de #584 —la rebaja de polígonos— no puede deshacerse
+  // por el camino: sigue siendo un puñado de cuadros, no cientos de chapas.
+  const geo = componer("geometria").poligonos.length;
+  const tex = componer("textura").poligonos.length;
+  assert.ok(tex < geo / 2, `de ${geo} a ${tex} se ha comido la rebaja de #584`);
+});
+
+test("un foco cercano aclara unos cuadros del paño más que otros", () => {
+  // Esta es la prueba de fuego de la opción B: si el paño fuera un único
+  // cuadrilátero (opción A), TODOS sus polígonos comparten centroide y un foco
+  // cercano los aclararía exactamente igual — una sola intensidad para todo
+  // el muro. Con la subdivisión, cada cuadro tiene su propio centroide y el
+  // foco tiene que dejar unos más claros que otros.
+  const sala = crearSalaCaja({ ...MEDIDAS, puertas: [], mobiliario: [], pielMuro: "textura" });
+  const x = MEDIDAS.ancho / 2;
+  const z = MEDIDAS.profundidad / 2 - 2;
+  const escena = sala.componer(x, 0, z, 0.35, {
+    ancho: 640,
+    alto: 400,
+    // Pegado a la esquina del muro del fondo que SÍ entra en el campo de
+    // visión de esta cámara (el otro extremo del muro de 22 m queda fuera del
+    // cono de 62°, y un foco ahí no se distinguiría de uno apagado — no
+    // porque la subdivisión no funcione, sino porque nada de ese trozo se
+    // pinta este fotograma).
+    focos: [{ posicion: [MEDIDAS.ancho - 1, 1.8, MEDIDAS.profundidad - 0.3], potencia: 3, alcance: 8 }],
+  });
+  const intensidades = escena.poligonos.filter((p) => p.textura).map((p) => p.intensidad);
+  assert.ok(intensidades.length > 1, "hacen falta varios cuadros para que la prueba diga algo");
+  const min = Math.min(...intensidades);
+  const max = Math.max(...intensidades);
+  assert.ok(max - min > 0.05, `intensidades demasiado uniformes: min=${min} max=${max}`);
+});
+
+/* ---- las luminarias iluminan, pero no se comen el presupuesto de focos ----- */
+
+test("un foco declarado por la escena sobrevive a las luminarias de la sala", () => {
+  // LA TRAMPA QUE ESTO VIGILA. Desde que las luminarias son focos de verdad,
+  // una sala declara hasta 36 —una cada 4 m—, y el motor se queda con los
+  // `TOPE_FOCOS` (4) más CERCANOS al observador. Como las luminarias cuelgan
+  // del techo de la propia sala, SIEMPRE hay cuatro más cerca que cualquier
+  // foco que declare la escena: medido en la primera sala del Phobos, las
+  // cuatro elegidas estaban a 2,5 y 4,3 m, y el foco declarado —potencia 3, a
+  // 12 m— se caía de la lista sin que nada avisara.
+  //
+  // El síntoma no es un error: es que `focos` (#556) deja de hacer NADA en
+  // cualquier sala iluminada. La escena pide una luz, el módulo la acepta, y
+  // no se ve. Por eso `nave-sala-caja` reserva el presupuesto para la escena
+  // primero y rellena el resto con luminarias, y por eso se prueba aquí en vez
+  // de confiar en el comentario.
+  const conFoco = componer("textura", {
+    focos: [{ posicion: [MEDIDAS.ancho - 1, 1.8, MEDIDAS.profundidad - 0.3], potencia: 3, alcance: 8 }],
+  });
+  const sinFoco = componer("textura");
+  const niveles = (escena) =>
+    new Set(escena.poligonos.filter((p) => p.textura).map((p) => p.intensidad));
+
+  assert.ok(
+    niveles(conFoco).size > niveles(sinFoco).size,
+    "el foco de la escena no cambia nada: se lo han comido las luminarias",
+  );
 });

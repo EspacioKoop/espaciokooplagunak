@@ -72,7 +72,16 @@ INFIJOS = (".temp.",)
 # Una ruta aqui es exacta (no un prefijo) y solo cubre el lockfile de un
 # paquete con su propio `package.json` intencional, nunca una via generica
 # para colar restos futuros.
-EXCEPCIONES = ("tools/e2e-visual/package-lock.json",)
+EXCEPCIONES = (
+    "tools/e2e-visual/package-lock.json",
+    # `tools/package.json` declara draco3d, que `tools/normalizar-glb.mjs`
+    # importa. Hasta #1084 lo instalaban a mano tres jobs distintos con
+    # `npm install --no-save`; el centinela de `main` nunca recibio el recado
+    # y tinio `main` de rojo con un ERR_MODULE_NOT_FOUND que parecia un fallo
+    # de los tests del museo. Una dependencia declarada una vez es lo que
+    # impide que la proxima puerta nazca sin ella.
+    "tools/package-lock.json",
+)
 
 
 def trackeados():

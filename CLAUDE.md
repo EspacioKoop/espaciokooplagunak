@@ -742,6 +742,20 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     un ajuste de mundo a quien tiene permiso de modificar ajustes del juego (el GM), comprobado
     por el servidor al escribir — la primera versión escuchaba el socket compartido sin acreditar
     al emisor, y un jugador podía emitir el payload directamente.
+    Lo mismo aplica al **plató de pruebas** (`scripts/estudio-escena.mjs`, con `ESTUDIO` en
+    `paleta.mjs`, #584): solo-GM, sin puerta en la nave, salida por su único punto de interacción. Su
+    razón de ser es otra: es la primera escena del módulo que declara `focos` (luces de punto de
+    #556) y sirve de banco de pruebas visual para la piel del muro TEXTURADA
+    (`scripts/piel-textura.mjs` + `pielMuro: "textura"` en `crearSalaCaja`, opción B de #584). Ese
+    camino es hoy el de TODAS las salas —#930 invirtió el defecto a `"textura"`—, así que la
+    subdivisión no es un experimento aislado: lo que el plató aporta es un sitio donde mirarla con
+    un rig de focos delante. La piel texturada sustituye los
+    cientos de chapas de 10 cm de un muro (#548) por un puñado de cuadros de ~1,5 m
+    (`SUBDIVISION_PANO_METROS` en `nave-sala-caja.mjs`): la rejilla no es para dibujo —eso lo da el
+    téxel, cuatro veces más fino que la caja que sustituye— sino SOLO para que `intensidadCara` (#556)
+    tenga varios centroides donde interpolar una luz de punto; un solo cuadrilátero por cara (la
+    opción A que se descartó) dejaría el muro entero a una intensidad, y las luces de #556 casi
+    decorativas en la superficie que más ocupa el cuadro.
     Lo que el museo NO hace es la mitad del diseño: **enseña y ya está**. La cartela se pinta al
     acercarse y se retira al apartarse (`accion: {tipo: "cartela"}` + el flanco de salida
     `alSalirDeInteraccion` de #598); no marca piezas como vistas, no lleva la cuenta ni deja rastro,

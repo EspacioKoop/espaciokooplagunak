@@ -28,9 +28,10 @@ test("el plano son las salas REALES del Phobos, más la cantina", () => {
  * Phobos sin nadie marcado en él (ver `pintarSituacion` en `andar-nave-app.mjs`).
  * La arena de combate (#1013) entra en la misma lista: es un claro al aire
  * libre, y dibujar dentro del plano del Phobos un sitio que mide más que el
- * Phobos sería el mismo plano mentiroso por el otro extremo.
+ * Phobos sería el mismo plano mentiroso por el otro extremo. El plató (#584)
+ * también: es un banco de pruebas del rig de focos de #556, no una sala.
  */
-const FUERA_DE_LA_NAVE = new Set(["playa", "museo", "pasillo-recuerdos", "arena"]);
+const FUERA_DE_LA_NAVE = new Set(["playa", "museo", "pasillo-recuerdos", "arena", "estudio"]);
 const ESTANCIAS_DE_LA_NAVE = CATALOGO_ANDAR.ids.filter((id) => !FUERA_DE_LA_NAVE.has(id));
 
 test("toda estancia de la nave por la que se anda aparece en el plano", () => {

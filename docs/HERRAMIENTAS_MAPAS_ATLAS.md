@@ -93,7 +93,8 @@ verificada ni se certifica aquí el criterio literal de cierre de #885.
 
 ## Coordinación con PR #887
 
-El PR #887 propone `docs/EXTERNAL_TOOLS_RESEARCH_885.md` sobre las mismas seis herramientas,
+El [PR #887](https://github.com/EspacioKoop/espaciokooplagunak/pull/887) propone otra
+investigación sobre las mismas seis herramientas,
 pero también aporta `ECOSISTEMA_OPEN_SOURCE.md`, `PROCEDENCIA_ASSETS.md`, `gutendex_seeds.py`
 y `sharetextures_categories.py`. Ese trabajo adicional no queda sustituido por esta tabla:
 se conserva en #887 con sus pruebas y hallazgos pendientes. Este documento se integra como

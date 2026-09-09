@@ -97,7 +97,7 @@ import { declararInteracciones } from "./nave-interaccion.mjs";
 import { ciclo, declararSol, franja, huellaDe } from "./escena-exteriores.mjs";
 import { rngSemilla } from "./ventana-nave.mjs";
 import { piezasHorizonte, texturasHorizonte } from "./horizonte-matte.mjs";
-import { GRID_UNIT_FT } from "./pathfinding-core.mjs";
+import { GRID_UNIT_FT } from "./pathfinding/pathfinding-core.mjs";
 import { claveCasilla } from "./combate-rejilla.mjs";
 import { DORIFORO } from "../data/mallas/doriforo.mjs";
 import { HERAKLES_FARNESE } from "../data/mallas/herakles-farnese.mjs";

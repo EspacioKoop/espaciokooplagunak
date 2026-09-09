@@ -41,7 +41,7 @@ import {
   crearGrid,
   dentro,
   vecinos,
-} from "./pathfinding-core.mjs";
+} from "./pathfinding/pathfinding-core.mjs";
 
 export { GRID_UNIT_FT };
 

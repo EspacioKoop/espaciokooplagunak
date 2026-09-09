@@ -15,7 +15,7 @@ import {
   ocupanteDe,
   piesDeCasillas,
 } from "../scripts/combate-rejilla.mjs";
-import { astar, crearGrid } from "../scripts/pathfinding-core.mjs";
+import { astar, crearGrid } from "../scripts/pathfinding/pathfinding-core.mjs";
 
 test("la unidad de casilla es la del core, no una propia", () => {
   assert.equal(GRID_UNIT_FT, 5);

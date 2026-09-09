@@ -9,8 +9,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { leerObj, leerGlb, simplificar, normalizar, moduloDeMalla, validarNombre } from "../../tools/convertir-estatua.mjs";
-import { normalizarGlb } from "../../tools/normalizar-glb.mjs";
+import { leerObj, leerGlb, simplificar, normalizar, moduloDeMalla, validarNombre } from "../convertir-estatua.mjs";
+import { normalizarGlb } from "../normalizar-glb.mjs";
 import { componerEscena, MALLA_CAZA } from "../../foundry-module/scripts/retro3d.mjs";
 import draco3d from "draco3d";
 

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { resolverObjetivoEscaneo } from "../scripts/resolver-objetivo-sensores.mjs";
+import { resolverObjetivoEscaneo } from "../../scripts/sensores/resolver-objetivo-sensores.mjs";
 
 const CENTRO = Object.freeze({ x: 0, y: 0 });
 

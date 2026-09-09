@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { filasDegradadas, filasCrudas, ESPACIO_FINO } from '../scripts/sensores-lista.mjs';
+import { filasDegradadas, filasCrudas, ESPACIO_FINO } from '../../scripts/sensores/sensores-lista.mjs';
 
 // Mock i18n object with a simple localize function that returns the key for testing
 const mockI18n = {

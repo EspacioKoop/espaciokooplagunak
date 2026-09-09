@@ -907,7 +907,7 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     banda larga sale como un bloque gris tan ancho como su incertidumbre, nunca con la silueta
     afilada de un contacto identificado—. Todo cae en un plano porque la simulación es 2D:
     repartir en vertical sería inventar altura. Lee la MISMA lectura degradada que ya se difunde
-    a la tripulación (`contactos-degradados.mjs`), así que no abre ningún dato nuevo. Sin sondeo
+    a la tripulación (`sensores/contactos-degradados.mjs`), así que no abre ningún dato nuevo. Sin sondeo
     se apaga y limpia (#353); un sondeo vacío sí se pinta, porque «he mirado y no hay nada» es un
     dato. No hay bucle de animación: se repinta con cada telemetría y por eso
     `prefers-reduced-motion` no tiene nada que frenar.

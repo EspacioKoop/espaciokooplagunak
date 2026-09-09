@@ -8,7 +8,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { alcancesDe, degradarContactos } from "../scripts/contactos-degradados.mjs";
+import { alcancesDe, degradarContactos } from "../../scripts/sensores/contactos-degradados.mjs";
 
 const RADAR = Object.freeze({ short_range: 5000, long_range: 30000 });
 const CENTRO = Object.freeze({ x: 0, y: 0 });
@@ -243,7 +243,7 @@ test("sin contactos devuelve lista vacía, que no es lo mismo que null", () => {
 
 // ---- La lista que se ve en la consola --------------------------------------
 
-import { ESPACIO_FINO, filasCrudas, filasDegradadas } from "../scripts/sensores-lista.mjs";
+import { ESPACIO_FINO, filasCrudas, filasDegradadas } from "../../scripts/sensores/sensores-lista.mjs";
 
 const i18nFalso = { localize: (clave) => clave };
 

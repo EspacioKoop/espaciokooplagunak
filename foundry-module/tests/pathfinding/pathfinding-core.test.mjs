@@ -10,7 +10,7 @@ import {
   obstaculosDesdeCajas,
   suavizarCamino,
   vecinos,
-} from "../scripts/pathfinding-core.mjs";
+} from "../../scripts/pathfinding/pathfinding-core.mjs";
 
 /** Todo par consecutivo de un camino suavizado debe tener línea directa real. */
 function segmentosValidos(grid, camino) {

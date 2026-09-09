@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { ENTRADAS, entradaPorId, entradasPanelGM } from "../scripts/panel-gm.mjs";
 
-test("el catálogo tiene las nueve entradas consolidadas de #448, #832 y el selector de parlamento", () => {
+test("el catálogo tiene las ocho entradas consolidadas de #448, #832 y el selector de parlamento", () => {
   const entradas = entradasPanelGM();
   assert.deepEqual(entradas.map((e) => e.id), [
     "consola",
@@ -13,7 +13,6 @@ test("el catálogo tiene las nueve entradas consolidadas de #448, #832 y el sele
     "decorado",
     "ficha",
     "convocatoria",
-    "parlamento",
     "parlamento-selector",
   ]);
   for (const entrada of entradas) {

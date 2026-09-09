@@ -37,15 +37,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+        with:
+          # La guarda de módulos nuevos compara con la base del PR, así que
+          # hace falta el commit de la base: con el clon superficial de serie
+          # `git diff base...HEAD` no tiene con qué comparar.
+          fetch-depth: 0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22"
-      - name: Instalar dependencias de tools/ (draco3d, vía museo-escena.test.mjs)
-        # museo-escena.test.mjs y convertir-estatua.test.mjs entran en
-        # tools/convertir-estatua.mjs -> tools/normalizar-glb.mjs, que importa
-        # draco3d. Declarado en tools/package.json (#1084).
-        working-directory: tools
-        run: npm ci
+      - name: Instalar draco3d (tools/convertir-estatua.mjs, vía museo-escena.test.mjs)
+        run: npm install draco3d@1.5.7 --no-save
       - name: Comprobar sintaxis JavaScript
         shell: bash
         run: |
@@ -67,6 +68,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 scripts/check_orphan_modules.py --check --check-github-evidence
+      - name: Ningún módulo nuevo entra sin consumidor ni declaración
+        # La guarda sobre el DELTA. `--check` mira el estado absoluto y tolera
+        # los `unknown` heredados a propósito (#701: ante sintaxis que el lexer
+        # no puede demostrar, mejor no saber que acusar en falso). Eso protege a
+        # lo que ya está en el árbol; un módulo que ESTRENA el PR y sale
+        # `unknown` no tiene esa excusa, y sin esto entra callando — que es
+        # cómo la reposición de #537 estuvo cuatro semanas sin superficie y
+        # cómo doce módulos del bloque de combate (#1012–#1035) iban a entrar
+        # a la vez. Solo corre en pull_request: en un push a `main` no hay
+        # base con la que comparar.
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          git diff --name-only --diff-filter=A "$base"...HEAD > /tmp/modulos-nuevos.txt
+          python3 scripts/check_orphan_modules.py \
+            --check --nuevos /tmp/modulos-nuevos.txt --proponer
       - name: El PNG prerenderizado corresponde al generador
         run: node tools/prerender-piel.mjs --check
 

@@ -455,6 +455,10 @@ def _validate_evidence(
 # grande: es un enlace copiado.
 MAX_DECLARACIONES_POR_EVIDENCIA = 3
 
+# Marca lo que `--proponer` NO puede rellenar por su cuenta. Se valida como
+# error, así que una propuesta a medio rellenar no pasa CI ni por descuido.
+MARCADOR_PENDIENTE = "RELLENAR"
+
 
 def _validate_provenance_is_distinctive(declarations: dict[str, dict]) -> None:
     """La procedencia no puede autocertificarse rellenando los campos.
@@ -545,6 +549,23 @@ def load_declarations(
             entry.get("foundation"), bool
         ):
             raise ValueError(f"declaración huérfana sin decisión de cimiento en {module}")
+        pendientes = [
+            campo
+            for campo, valor in (
+                ("reason", entry["reason"]),
+                ("declaredBy", entry["declaredBy"]),
+                ("evidence.url", str((entry.get("evidence") or {}).get("url", ""))),
+            )
+            if MARCADOR_PENDIENTE in valor
+        ]
+        if pendientes:
+            raise ValueError(
+                f"declaración sin rellenar en {module} ({', '.join(pendientes)}): "
+                f"`--proponer` marca con {MARCADOR_PENDIENTE} lo que no puede "
+                "saber. Lo mecánico lo pone la herramienta; por qué ESTE módulo "
+                "todavía no cuelga de nadie, y con qué issue se decidió, solo lo "
+                "sabe quien lo escribió"
+            )
         _validate_evidence(
             module,
             entry.get("evidence"),
@@ -638,6 +659,125 @@ def inventory(
     return results
 
 
+COLOR_LITERAL_RE = re.compile(
+    r"""["'`]\#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})["'`]|\b(?:rgba?|hsla?)\(\s*\d"""
+)
+
+
+def sin_comentarios(fuente: str) -> str:
+    """Quita comentarios de bloque y de línea, como hace paleta.test.mjs."""
+    sin_bloque = re.sub(r"/\*[\s\S]*?\*/", "", fuente)
+    return re.sub(r"^\s*//.*$", "", sin_bloque, flags=re.MULTILINE)
+
+
+def modulos_nuevos(paths: list[str], root: Path) -> list[str]:
+    """Traduce rutas del repositorio a claves de módulo bajo `<root>/scripts/`."""
+    prefijo = PurePosixPath(root.as_posix()) / "scripts"
+    claves = []
+    for path in paths:
+        limpio = path.strip()
+        if not limpio or not limpio.endswith(".mjs"):
+            continue
+        candidato = PurePosixPath(limpio)
+        try:
+            claves.append(candidato.relative_to(prefijo).as_posix())
+        except ValueError:
+            continue
+    return sorted(set(claves))
+
+
+def proponer_declaracion(modulo: str, hoy: date) -> dict:
+    """Esqueleto de declaración para un módulo nuevo sin consumidor.
+
+    Rellena lo MECÁNICO —la clave del módulo, el estado, la forma del bloque,
+    la fecha— y deja marcado lo que no puede saber. `reason` y `evidence.url`
+    son justo lo que #822 vio rellenar en masa: 34 declaraciones con un motivo
+    que era la definición de huérfana y un enlace copiado a un issue de otro
+    asunto. Una herramienta que los inventase sería mejor generando el relleno
+    que un humano con prisa, no peor, así que no los inventa: los marca, y la
+    validación los rechaza hasta que alguien los escriba.
+    """
+    return {
+        "module": modulo,
+        "status": "declared-orphan",
+        "foundation": False,
+        "reason": (
+            f"{MARCADOR_PENDIENTE}: por qué este módulo todavía no cuelga de "
+            "nadie, y cuál será su primer consumidor. No vale la definición de "
+            "huérfano; tiene que ser distinto del motivo de cualquier otra "
+            "declaración."
+        ),
+        "declaredBy": MARCADOR_PENDIENTE,
+        "declaredAt": hoy.isoformat(),
+        "evidence": {
+            "type": "issue",
+            "url": (
+                "https://github.com/EspacioKoop/espaciokooplagunak/issues/"
+                + MARCADOR_PENDIENTE
+            ),
+        },
+    }
+
+
+def escribir_propuestas(
+    declaration_path: Path, propuestas: list[dict]
+) -> None:
+    """Añade las propuestas al inventario conservando su orden y formato."""
+    datos = json.loads(declaration_path.read_text(encoding="utf-8"))
+    existentes = {entry["module"] for entry in datos["declarations"]}
+    datos["declarations"].extend(
+        propuesta
+        for propuesta in propuestas
+        if propuesta["module"] not in existentes
+    )
+    declaration_path.write_text(
+        json.dumps(datos, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
+
+def revisar_modulos_nuevos(
+    results: list[dict],
+    nuevos: list[str],
+    fuentes: dict[str, str],
+    art_modules: set[str],
+) -> list[str]:
+    """Errores de un PR que ESTRENA módulos, sobre el delta y no sobre el estado.
+
+    `unknown` no rompe CI a propósito (#701): ante sintaxis que el lexer
+    reducido no puede demostrar, el inventario prefiere no saber antes que
+    acusar en falso, y los `unknown` heredados no bloquean a nadie. Pero eso
+    vale para lo que YA está en el árbol: un módulo que ESTRENA este PR y sale
+    `unknown` es otra cosa — nadie lo importa todavía y quien lo escribe es
+    quien sabe si eso es un cimiento deliberado o un cable que se olvidó. Sin
+    esta comprobación entra en silencio, que es como la reposición de #537
+    estuvo cuatro semanas escrita sin ninguna superficie.
+    """
+    estados = {result["module"]: result["status"] for result in results}
+    errores = []
+    for modulo in nuevos:
+        estado = estados.get(modulo)
+        if estado is None:
+            continue
+        if estado == "unknown":
+            errores.append(
+                f"{modulo}: módulo nuevo sin consumidor y sin declarar. "
+                "Cablealo, o declaralo en docs/orphan-declarations.json con su "
+                "motivo y su evidencia propios."
+            )
+        fuente = fuentes.get(modulo)
+        if fuente is None or modulo in art_modules:
+            continue
+        literales = COLOR_LITERAL_RE.findall(sin_comentarios(fuente))
+        if literales:
+            errores.append(
+                f"{modulo}: módulo nuevo con color propio ({', '.join(sorted(set(literales)))}) "
+                "fuera de artModules. Los colores viven solo en paleta.mjs (#351); "
+                "si de verdad es un módulo de arte, entra en artModules y la guarda "
+                "de paleta.test.mjs empieza a recorrerlo."
+            )
+    return errores
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("foundry-module"))
@@ -649,6 +789,29 @@ def main() -> int:
         "--check",
         action="store_true",
         help="valida el inventario en modo CI (la validación también protege la salida normal)",
+    )
+    parser.add_argument(
+        "--nuevos",
+        type=Path,
+        help=(
+            "fichero con las rutas que este cambio ESTRENA (una por línea, tal "
+            "y como las da `git diff --name-only --diff-filter=A`): exige que "
+            "cada módulo nuevo quede conectado o declarado"
+        ),
+    )
+    parser.add_argument(
+        "--proponer",
+        action="store_true",
+        help=(
+            "con --nuevos: imprime el esqueleto de declaración de cada módulo "
+            "nuevo sin consumidor, con el motivo y la evidencia marcados para "
+            "rellenar a mano"
+        ),
+    )
+    parser.add_argument(
+        "--escribir",
+        action="store_true",
+        help="con --proponer: añade los esqueletos al inventario en vez de imprimirlos",
     )
     parser.add_argument(
         "--check-github-evidence",
@@ -665,6 +828,61 @@ def main() -> int:
     except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
+    if args.nuevos is not None:
+        try:
+            lineas = args.nuevos.read_text(encoding="utf-8").splitlines()
+        except OSError as error:
+            print(f"error: {error}", file=sys.stderr)
+            return 2
+        nuevos = modulos_nuevos(lineas, args.root)
+        fuentes = {}
+        for modulo in nuevos:
+            ruta = args.root / "scripts" / modulo
+            try:
+                fuentes[modulo] = ruta.read_text(encoding="utf-8")
+            except OSError:
+                continue
+        art_modules = {
+            result["module"]
+            for result in results
+            if "art" in result.get("inventories", ())
+        }
+        errores = revisar_modulos_nuevos(results, nuevos, fuentes, art_modules)
+        if errores:
+            print("módulos nuevos sin declarar:", file=sys.stderr)
+            for error in errores:
+                print(f"  - {error}", file=sys.stderr)
+            if args.proponer:
+                estados = {
+                    result["module"]: result["status"] for result in results
+                }
+                propuestas = [
+                    proponer_declaracion(modulo, date.today())
+                    for modulo in nuevos
+                    if estados.get(modulo) == "unknown"
+                ]
+                if propuestas and args.escribir:
+                    escribir_propuestas(args.declarations, propuestas)
+                    print(
+                        f"\nEscritos {len(propuestas)} esqueletos en "
+                        f"{args.declarations}. Rellena cada "
+                        f"`{MARCADOR_PENDIENTE}` — la validación los rechaza "
+                        "hasta entonces.",
+                        file=sys.stderr,
+                    )
+                elif propuestas:
+                    print(
+                        "\nPropuesta (pégala en "
+                        f"{args.declarations} → declarations, o repite con "
+                        "--escribir):",
+                        file=sys.stderr,
+                    )
+                    print(
+                        json.dumps(propuestas, ensure_ascii=False, indent=2),
+                        file=sys.stderr,
+                    )
+            return 1
+
     if args.format == "json":
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:

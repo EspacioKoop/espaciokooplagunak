@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  />
+  <title>Lagunak · contrato de escena 3D/2D</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font: 16px system-ui;
+      background: #0b0f18;
+      color: #f0e4c4;
+    }
+    body {
+      margin: 20px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 6px;
+    }
+    p {
+      max-width: 100ch;
+    }
+    button,
+    input {
+      font: inherit;
+    }
+    button {
+      padding: 7px 12px;
+    }
+    button:focus-visible,
+    input:focus-visible {
+      outline: 3px solid #ffb703;
+    }
+    nav {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 16px 0;
+    }
+    .panels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
+      gap: 16px;
+    }
+    .surface {
+      position: relative;
+      height: 370px;
+      overflow: hidden;
+      background: #06080e;
+      border: 1px solid #9fb4e8;
+    }
+    canvas {
+      position: absolute;
+      image-rendering: pixelated;
+    }
+    h2 {
+      font-size: 1.1rem;
+    }
+    output {
+      display: block;
+      min-height: 3em;
+      font: 14px ui-monospace;
+      white-space: pre-wrap;
+    }
+    .caption {
+      font-size: 0.9rem;
+    }
+    #status {
+      padding: 8px;
+      border-left: 4px solid #ffb703;
+    }
+    a {
+      color: #9fb4e8;
+    }
+  </style>
+  <h1>Lagunak · primera vertical del motor 3D/2D</h1>
+  <p>
+    Cantina existente, sin Foundry. La misma escena antes de proyección:
+    matrices, mallas, materiales y atlas. Candidato experimental, no elección
+    definitiva.
+  </p>
+  <nav aria-label="Cámara y presentación">
+    <label
+      >Giro <input id="yaw" type="range" min="-60" max="60" value="0"
+    /></label>
+    <label
+      >Inclinación <input id="pitch" type="range" min="-30" max="30" value="0"
+    /></label>
+    <label
+      >Avance
+      <input
+        id="advance"
+        type="range"
+        min="-0.4"
+        max="6"
+        step="0.1"
+        value="-0.4"
+    /></label>
+    <button id="reset">Restablecer cámara</button
+    ><button id="close">Cerrar render</button><button id="open">Reabrir</button>
+  </nav>
+  <div id="status" role="status">Cargando renderizadores…</div>
+  <div class="panels">
+    <section>
+      <h2>A · rasterizador software existente</h2>
+      <div class="surface" id="software-surface"></div>
+      <output id="software-cost" aria-label="Coste software"></output>
+    </section>
+    <section>
+      <h2>B · Three.js / WebGL2</h2>
+      <div class="surface" id="gpu-surface"></div>
+      <output id="gpu-cost" aria-label="Coste GPU"></output>
+    </section>
+  </div>
+  <p class="caption">
+    Atlas 2D: siluetas originales de nave-sprite.mjs. Colocación de muestras y
+    nave dentro de la sala: fixture de presentación, NO contactos ni simulación.
+    El sprite de mundo puede quedar oculto por la barra; la tira 2D no hereda su
+    profundidad. HUD en DOM, fuera de la rejilla.
+  </p>
+  <p class="caption">
+    Resolución lógica 320 × 180, nearest, escala entera y bandas; si no cabe,
+    recorte explícito, nunca deformación. CPU = tiempo de llamada; GPU =
+    consulta asíncrona cuando esté disponible, no FPS.
+    <a href="README.md">Alcance, mediciones y límites</a>. OTACON Astra.
+  </p>
+  <script type="module" src="viewer.mjs"></script>
+</html>

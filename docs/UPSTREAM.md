@@ -25,7 +25,7 @@ Su antigüedad **no es motivo para retirarlo ni reescribirlo**. Por ADR-0007, un
 arreglo en código heredado se propone primero a EmptyEpsilon; moverlo o
 sustituirlo por documentación propia crearía una divergencia permanente nueva
 donde hoy no hay ninguna. El análisis completo, con las premisas verificadas,
-está en [#721](https://github.com/VaroTv7/espaciokooplagunak/issues/721).
+está en [#721](https://github.com/EspacioKoop/espaciokooplagunak/issues/721).
 
 No se renombra masivamente el proyecto original dentro del código: cualquier cambio de identidad debe preservar los créditos y distinguir con claridad producto derivado y upstream.
 
@@ -34,7 +34,7 @@ No se renombra masivamente el proyecto original dentro del código: cualquier ca
 Configuración esperada:
 
 ```text
-origin   https://github.com/VaroTv7/espaciokooplagunak.git
+origin   https://github.com/EspacioKoop/espaciokooplagunak.git
 upstream https://github.com/daid/EmptyEpsilon.git
 ```
 
@@ -83,6 +83,14 @@ sigue vigente tras los cambios que upstream haya hecho en esa área:
   stubs `/get.lua`/`/set.lua`. No requiere cambiarse solo por antigüedad; confirma que la
   mitigación (httpserver apagado por defecto + gate de CI `guardia-exec-lua`) sigue cubriendo
   el comportamiento real tras el merge. Ver CLAUDE.md y [`SECURITY.md`](../SECURITY.md) (issue #272).
+- `scripts/shiptemplates/frigates.lua` — el interior del Phobos M3P (trece salas sobre una
+  rejilla) es la **fuente autoritativa** de la planta que el módulo Foundry copia en
+  `foundry-module/scripts/nave-planta-phobos.mjs`, según [ADR-0015](adr/0015-dato-derivado-se-copia-y-se-compara.md).
+  Si upstream cambia ese interior, `foundry-module/tests/nave-planta-phobos.test.mjs` **fallará
+  durante el sync**, con el mensaje «la copia de `SALAS_PHOBOS` ya no coincide con
+  `scripts/shiptemplates/frigates.lua`». Eso es un **fallo esperado y no una regresión del
+  fork**: es la guarda haciendo su trabajo. Se resuelve actualizando la copia del módulo en el
+  mismo PR de sync, nunca relajando ni saltando la prueba.
 
 ## Reglas
 
@@ -103,4 +111,4 @@ Cambios nuestros sobre archivos heredados que **no** dependen de este fork y con
 
 | Archivo | Qué hace | Origen | Estado |
 |---|---|---|---|
-| `CMakeLists.txt` (bloque `WITH_DISCORD`) + `cmake/DiscordGameSdk.cmake` | Comprueba la descarga y la extracción del SDK de Discord y aborta la configuración con un diagnóstico correcto. Antes, un archivo roto dejaba configurar y el build moría seis minutos después por una cabecera ausente, señalando al culpable equivocado. El propio módulo dice que conviene ofrecerlo aguas arriba; esta fila es lo que impide que ese «conviene» se pierda. **Incluye la versión fijada del SDK (`3.2.1`) con SHA-256 esperado en vez de `latest`**: con `latest`, Discord puede cambiar la cabecera bajo los pies entre dos builds del mismo commit. | [#400](https://github.com/VaroTv7/espaciokooplagunak/issues/400) | sin enviar |
+| `CMakeLists.txt` (bloque `WITH_DISCORD`) + `cmake/DiscordGameSdk.cmake` | Comprueba la descarga y la extracción del SDK de Discord y aborta la configuración con un diagnóstico correcto. Antes, un archivo roto dejaba configurar y el build moría seis minutos después por una cabecera ausente, señalando al culpable equivocado. El propio módulo dice que conviene ofrecerlo aguas arriba; esta fila es lo que impide que ese «conviene» se pierda. **Incluye la versión fijada del SDK (`3.2.1`) con SHA-256 esperado en vez de `latest`**: con `latest`, Discord puede cambiar la cabecera bajo los pies entre dos builds del mismo commit. | [#400](https://github.com/EspacioKoop/espaciokooplagunak/issues/400) | sin enviar |

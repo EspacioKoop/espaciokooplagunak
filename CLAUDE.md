@@ -265,7 +265,16 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     es hoy por centroide de cara y es la deuda viva de #510 —empata entre caras que se tocan, que
     es el parpadeo que ve QA—; lo ya intentado y descartado (epsilon con orden estable; Newell sin
     partir caras, que empeora la medida) está escrito en la cabecera de `retro3d.mjs` para no
-    repetirlo por cuarta vez. El arte de ficha de
+    repetirlo por cuarta vez. Para ver lo que este motor dibuja de VERDAD —no una maqueta con su
+    propia proyección— está el banco de pruebas de `tools/banco-3d/` (#976): `index.html`/`app.mjs`
+    importan `retro3d.mjs`/`retro3d-lienzo.mjs` por ESM y pintan en un `<canvas>` real con controles
+    de malla, época, giro de cámara y fase de marcha; `capturar.mjs` sirve esa página con
+    `servidor.mjs` (HTTP nativo, sin dependencias) y la abre con el Playwright ya instalado en
+    `tools/e2e-visual` (reutilizado por `createRequire`, no una segunda copia) para guardar un PNG
+    por ángulo. Las cinco reglas geométricas de #976/#974 (caras no rectangulares, proporción,
+    pie plantado, huellas, silueta por clase) son predicados puros en
+    `tools/comprobaciones-avatar.mjs`, probados con `node --test` sobre casos sintéticos — la
+    geometría de avatar en sí (hoy cajas en `tools/banco-figura.mjs`) sigue siendo #974. El arte de ficha de
     naves narrativas (`scripts/ficha-nave.mjs`, con el codificador PNG puro de
     `scripts/png-indexado.mjs`) se genera **solo por clic del GM** y escribe el token prototipo:
     nunca sondea ni sincroniza posición, porque un documento persistente que espeje la simulación

@@ -35,6 +35,14 @@ test("combinarTarjetas conserva la evolución y sustituye solo el overlay", () =
   assert.notEqual(carta, base);
 });
 
+test("ally ausente o no booleano no convierte un combatiente en enemigo", () => {
+  for (const ally of [undefined, null, 0, "false"]) {
+    const [carta] = tarjetasDesdeEstadoTurno({ combatants: [{ id: "a", ally }] });
+    assert.equal(carta.bando, "neutral");
+  }
+  assert.equal(tarjetasDesdeEstadoTurno({ combatants: [{ id: "a", ally: false }] })[0].bando, "enemigo");
+});
+
 test("una actualización explícita puede retirar badges sin perder campaña", () => {
   const base = normalizarTarjeta({ id: "a", shiny: true, concentracion: true, inspiracion: true });
   const carta = combinarTarjetas(base, { concentracion: false, inspiracion: false });

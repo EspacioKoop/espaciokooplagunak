@@ -144,9 +144,9 @@ export function tarjetasDesdeEstadoTurno(estado) {
     // de verdad que lo pise.
     bando: typeof combatiente.bando === "string"
       ? combatiente.bando
-      : combatiente.ally
+      : combatiente.ally === true
         ? "aliado"
-        : "enemigo",
+        : combatiente.ally === false ? "enemigo" : undefined,
   })), { activoId: actual?.id ?? null, siguienteId: siguiente?.id ?? null });
 }
 

@@ -133,6 +133,18 @@
       }
     },
     {
+      "module": "map-ref-resolver.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Resolutor puro de `map_ref` a MapDocument, con ausente y desconocido tratados como el mismo no-mapa. El productor #870 ya está integrado y la regresión recorre JSON del atlas, validateCosmography y resolver. Sigue siendo una base sin consumidor de interfaz; no acredita carga de biblioteca C++ ni smoke jugable.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/906"
+      }
+    },
+    {
       "module": "nave-movimiento-sala-prueba.mjs",
       "status": "declared-orphan",
       "foundation": true,

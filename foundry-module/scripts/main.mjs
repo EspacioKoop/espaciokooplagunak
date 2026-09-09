@@ -1086,20 +1086,15 @@ function abrirConvocatoria() {
 
 /** Maneja el envío del formulario de convocatoria. */
 function manejarConvocatoria({ idEstancia, rolConvocante }) {
-  // Importamos la función convocar solo cuando se necesita.
-  import("../scripts/convocatoria-estancia.mjs").then(({ convocar }) => {
-    const resultado = convocar(idEstancia, rolConvocante);
-    if (resultado) {
-      // Aquí podríamos mostrar una notificación de éxito o hacer algo con el resultado.
-      // Por ahora, solo aseguramos que la función se llamó con los argumentos correctos.
-      // El test verificará que se llame con los argumentos esperados.
-    } else {
-      // Si convocar devuelve null, podríamos mostrar un error.
+  // Un único transporte para barra y panel: #876 valida el rol actual,
+  // espera al permiso del host y recibe createSetting/updateSetting.
+  if (rolConvocante !== "GM") return Promise.resolve(null);
+  return convocarYTransmitir(idEstancia).then((publicado) => {
+    if (!publicado) {
       ui.notifications?.warn(game.i18n.localize("LAGUNAK.PanelGM.Convocatoria.Error"));
+      return null;
     }
-  }).catch(err => {
-    console.error("Error al importar convocatoria-estancia.mjs:", err);
-    ui.notifications?.warn(game.i18n.localize("LAGUNAK.PanelGM.Convocatoria.Error"));
+    return { estancia: idEstancia };
   });
 }
 

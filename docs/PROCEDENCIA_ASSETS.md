@@ -142,3 +142,59 @@ dice que el nivel elegido no era casualidad de aquella pieza.
 tabla `FICHAS` y **se niega a convertir** lo que no esté en ella. Este documento
 es la versión para humanos, con el porqué; aquella es la que hace imposible
 saltarse el paso.
+
+---
+
+## Los tres cuadros interpretados del museo (#836)
+
+Estos tres no encajan en el molde de arriba, y por eso van con su propia
+explicación en vez de con una fila más de la tabla: **no hay archivo**. De la
+fuente sale la COMPOSICIÓN y nada más — se mira un escaneo de dominio público y
+se vuelve a dibujar el paisaje en `foundry-module/scripts/museo-cuadro.mjs`, con
+los mismos rectángulos con los que se pinta la piel de un muro, a 2,5 cm por
+píxel. Ni un byte del escaneo entra en el árbol.
+
+De ahí las dos consecuencias que hay que saber leer:
+
+- **No hay `sha256` ni comando de conversión.** No se ha copiado nada que
+  comprobar. El día que una de estas fichas necesite un hash, es que alguien ha
+  traído un fichero ajeno y eso ya no es una interpretación: vuelve a la tabla de
+  arriba, con su licencia del **archivo**.
+- **Su `naturaleza` es `interpretacion`,** el sexto valor de `NATURALEZAS`
+  (`foundry-module/scripts/catalogo-piezas.mjs`). No es `obra-propia`: el
+  fichero es nuestro pero la composición es de otro y está identificada, y
+  llamarla propia sería la única forma de que la sala enseñara la obra de alguien
+  sin decirlo. La cartela lo dice en los dos idiomas y una prueba lo exige.
+
+| Cuadro | Obra de la que se redibuja | Autoría del original | Situación de la obra | Enlace que declara la licencia |
+|---|---|---|---|---|
+| `frente-al-mar` | *La gran ola de Kanagawa*, c. 1830 | Katsushika Hokusai | Dominio público por antigüedad; el escaneo, sin derechos reclamados | https://commons.wikimedia.org/wiki/File:Tsunami_by_hokusai_19th_century.jpg |
+| `viento-del-sur` | *Viento del sur, cielo despejado* (Fuji rojo), c. 1830 | Katsushika Hokusai | Ídem | https://commons.wikimedia.org/wiki/File:Red_Fuji_southern_wind_clear_morning.jpg |
+| `sobre-la-niebla` | *El caminante sobre el mar de nubes*, c. 1818 | Caspar David Friedrich | Ídem | https://commons.wikimedia.org/wiki/File:Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg |
+
+**Por qué estas tres y no otras tres mejores.** No es la fama: es que un lienzo
+mide 48 × 32 píxeles, y ahí solo sobrevive lo que se reconoce por MASAS. La ola,
+el cono rojo y la silueta contra la niebla se leen enteros a esa resolución; un
+retrato o un interior se convierten en una mancha. La resolución no se sube para
+que quepa una cuarta —esa es la celda del lienzo, y bajarla o subirla es mover el
+mando de escala de todos los cuadros a la vez—.
+
+## The Open Window — Saki (semilla procedural para #853)
+
+Propuesta de obra de dominio público como semilla visual para el libro 3D
+interactuable de issue #853. No se redistribuye texto ni imagen escaneada: las
+páginas del libro se pintan proceduralmente como mancha tipográfica/atmosférica.
+
+| Obra | *The Open Window*, cuento de Saki (H. H. Munro). |
+|---|---|
+| **Qué es el fichero** | No se incluye archivo del libro. Solo se usa título, ambientación y estructura como seed para generación procedural de páginas en rejilla. |
+| **Autoría original** | Saki (H. H. Munro), fallecido en 1916. |
+| **Licencia** | Public domain en EE. UU. |
+| **Verificación** | Project Gutenberg, colección *Beasts and Super-Beasts*, ID 269: autor Saki, contenido incluye *The Open Window*, estado «Public domain in the USA». El ID 11639 citado antes corresponde a *Figures of Earth* de Cabell y no acredita este cuento. |
+| **Enlace** | https://www.gutenberg.org/ebooks/269 |
+| **Archivo en repo** | No aplica; no se distribuye contenido del libro. |
+| **sha256** | No aplica. |
+| **Cómo se genera** | Páginas pintadas con `scripts/libro-pagina.mjs` usando `chapasDeRejilla`, sin texto legible ni binarios. |
+
+**Nota:** Si en el futuro se incluyera una cubierta o interior escaneado, haría
+falta una segunda ficha para ese archivo concreto con su propia licencia y sha256.

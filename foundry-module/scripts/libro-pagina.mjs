@@ -113,7 +113,7 @@ export function rejillaPagina(semilla) {
 
 /**
  * Une las mallas de `chapasDeRejilla` en una sola, para que la página sea una
- * malla registrable (igual que `fusionarMallas` en nave-cuadro.mjs).
+ * malla registrable (igual que `fusionarMallas` en museo-cuadro.mjs).
  * @param {{malla:{vertices:number[][],caras:number[][]}, color:string}[]} piezas
  * @returns {{vertices:number[][], caras:number[][]}}
  */

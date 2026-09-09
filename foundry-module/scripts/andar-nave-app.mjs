@@ -29,6 +29,10 @@ import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
 import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
 import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
+import { CATALOGO_CUADROS } from "./museo-cuadros.mjs";
+import { CATALOGO_PASILLO } from "./pasillo-recuerdos-piezas.mjs";
+import { resolverAsiento } from "./nave-asiento.mjs";
+import { ponerPose } from "./nave-pose.mjs";
 import { AJUSTE_TELEMETRIA, aceptarSensores, aceptarTelemetria } from "./ship-view/telemetria-difusion.mjs";
 import { AJUSTE_NIVEL_ALERTA } from "./alerta-escena.mjs";
 
@@ -141,14 +145,14 @@ export const TECLA_GIRO = Object.freeze({ q: -1, e: 1, ArrowLeft: -1, ArrowRight
  * una prueba. `andar-nave-app.test.mjs` compara las tres tablas y falla si un
  * mapa pisa a otro.
  */
-export const TECLAS_ACCION = Object.freeze({ v: "camara", V: "camara" });
+export const TECLAS_ACCION = Object.freeze({ v: "camara", V: "camara", f: "asiento", F: "asiento" });
 
 /**
  * Engancha teclado a un mando de `arrancarAndar`. Vive fuera de las dos
  * clases a propósito, igual que `encenderSala` en `cantina-app.mjs`: es
  * cableado de DOM, no comportamiento de ventana.
  */
-function engancharTeclado(raiz, mando) {
+function engancharTeclado(raiz, mando, acciones = {}) {
   const lienzo = raiz?.querySelector?.(".lagunak-andar-lienzo");
   if (!lienzo) return () => {};
 
@@ -201,6 +205,19 @@ function engancharTeclado(raiz, mando) {
       ev.preventDefault();
       ev.stopPropagation();
       mando.alternarCamara();
+      return;
+    }
+    // Sentarse y levantarse (asientos). `f` y no `e`: `e` ya gira, y una tecla
+    // repetida aquí sería código muerto —`TECLA_DIRECCION` y `TECLA_GIRO` se
+    // consultan antes y hacen `return`—, que es exactamente el fallo que la
+    // cámara tuvo con `c` y que `TECLAS_RESERVADAS` vigila desde entonces.
+    //
+    // En el flanco de PULSACIÓN, como la cámara: es un interruptor, no una
+    // dirección que se mantenga.
+    if (TECLAS_ACCION[ev.key] === "asiento") {
+      ev.preventDefault();
+      ev.stopPropagation();
+      acciones.alternarAsiento?.();
     }
   };
   const onKeyUp = (ev) => {
@@ -273,6 +290,28 @@ function arrancar(raiz, estanciaPedida = null) {
     nodo.textContent = game.i18n?.format?.("LAGUNAK.AndarNave.EstasEn", { sala: nombre }) ?? nombre;
   }
   /**
+   * Pinta —o retira— el letrero de a dónde lleva la puerta que se tiene
+   * delante (#458 QA: «no se entiende a dónde te va a llevar una puerta»).
+   *
+   * MISMO PATRÓN QUE `pintarCartela`: región `status`, `textContent` y nunca
+   * HTML, y se retira al apartarse. El nombre sale de la MISMA clave i18n que
+   * ya rotula la sala (`rotularSala`) — es el nombre de la sala destino, no un
+   * texto nuevo que mantener sincronizado con dos.
+   */
+  function pintarLetreroPuerta(destino) {
+    const nodo = raiz?.querySelector?.("[data-andar-letrero-puerta]");
+    if (!nodo) return;
+    if (!destino?.estancia) {
+      nodo.hidden = true;
+      return;
+    }
+    const clave = ["LAGUNAK", "AndarNave", "Sala", destino.estancia].join(".");
+    const nombre = game.i18n?.has?.(clave) ? game.i18n.localize(clave) : destino.estancia;
+    nodo.textContent = game.i18n?.format?.("LAGUNAK.AndarNave.LlevaA", { sala: nombre }) ?? nombre;
+    nodo.hidden = false;
+  }
+
+  /**
    * Pinta —o retira— la cartela de la pieza que se tiene delante (#598).
    *
    * `textContent` y nunca HTML: el texto viene de un catálogo de datos, y una
@@ -282,7 +321,15 @@ function arrancar(raiz, estanciaPedida = null) {
   function pintarCartela(piezaId) {
     const nodo = raiz?.querySelector?.("[data-andar-cartela]");
     if (!nodo) return;
-    const pieza = piezaId ? piezaPorId(CATALOGO_MUSEO, piezaId) : null;
+    // Tres catálogos y una sola lectura: las esculturas, los cuadros de la
+    // pared (#836) y las piezas del pasillo de los recuerdos se colocan
+    // distinto en su sala, pero la cartela se lee igual en los tres. Un
+    // `accion.pieza` es un id opaco y aquí se resuelve contra los tres.
+    const pieza = piezaId
+      ? piezaPorId(CATALOGO_MUSEO, piezaId)
+        ?? piezaPorId(CATALOGO_CUADROS, piezaId)
+        ?? piezaPorId(CATALOGO_PASILLO, piezaId)
+      : null;
     if (!pieza) {
       nodo.hidden = true;
       return;
@@ -382,6 +429,30 @@ function arrancar(raiz, estanciaPedida = null) {
     return game.settings?.get?.(MODULE_ID, AJUSTE_TELEMETRIA) ?? null;
   }
 
+  /**
+   * El asiento que se tiene delante, o `null`.
+   *
+   * Vive en la VENTANA y no en el bucle por la misma razón que el reparto de
+   * interacciones: el bucle no sabe qué es una silla. Y no en el catálogo,
+   * porque no es un dato de la escena sino de este jugador en este instante.
+   */
+  let asientoAlAlcance = null;
+
+  /**
+   * En qué pose está cada mueble que las tiene, por estancia.
+   *
+   * Vive aquí por la misma razón que `asientoAlAlcance`, y esa razón es una
+   * regla y no una comodidad: una escena no RECUERDA (`docs/FOUNDRY.md`). Que
+   * una silla esté retirada es cierto mientras esta ventana está abierta y con
+   * alguien sentado, y al cerrarla vuelve a su sitio — igual que te levantas.
+   * Guardarlo en la estancia lo convertiría en estado de partida, y entonces la
+   * terraza tendría que decidir qué hacer con una silla que alguien dejó
+   * retirada hace tres sesiones.
+   *
+   * Por estancia y no global: dos salas pueden tener un mueble con el mismo id.
+   */
+  const posesPorEstancia = new Map();
+
   // Rótulo inicial: el resto de llamadas van en los cambios de estancia.
   const mando = arrancarAndar(lienzo, {
     sensores: () => aceptarSensores(sobreTelemetria()),
@@ -421,6 +492,11 @@ function arrancar(raiz, estanciaPedida = null) {
       // para saber que alguien cambió de sala.
       ultimoSelloEnviado = publicarPosicion(estanciaActual, mando, ultimoSelloEnviado, true);
     },
+    // El letrero de destino (#458): se lee ANTES de cruzar, así que va por su
+    // propio flanco de acercarse/alejarse y no por `alTocarPuerta` — para
+    // cuando se cruza, el letrero ya lleva un rato puesto.
+    alAcercarsePuerta: (destino) => pintarLetreroPuerta(destino),
+    alAlejarsePuerta: () => pintarLetreroPuerta(null),
     // Qué significa cada punto de interacción se decide AQUÍ y no en el bucle
     // (#582): el lienzo transporta la `accion` declarada por el catálogo y esta
     // ventana la traduce a lo que Foundry sabe hacer. Un tipo nuevo —el punto de
@@ -433,8 +509,17 @@ function arrancar(raiz, estanciaPedida = null) {
     // ignora el `puesto` que se le pasa y abre el propio (#237, ver la
     // cabecera de `station-workspace-ui.mjs`) — caminar hasta una consola
     // ajena no enseña nada que el relé no dejara ver igualmente por botón.
-    alAlcanzarInteraccion: ({ accion }) => {
+    alAlcanzarInteraccion: (interaccion) => {
+      const { accion } = interaccion;
       if (accion?.tipo === "consola") openWorkspaceApp(accion.puesto);
+      // Un asiento NO sienta a nadie al pasar por delante: solo se recuerda cuál
+      // se tiene al alcance, y sentarse es un gesto aparte (`f`). Es la
+      // diferencia entre las dos familias de punto de interacción que había
+      // hasta ahora — abrir una consola o leer una cartela son cosas que te
+      // PASAN al acercarte, y sentarse es algo que HACES. Una silla que te
+      // sentara sola al rozarla haría intransitable la terraza.
+      else if (accion?.tipo === "asiento")
+        asientoAlAlcance = { ...interaccion, altura: accion.altura, prop: accion.prop };
       // La cartela de una pieza de museo (#598). Es LECTURA y nada más: no
       // abre ventana, no marca la pieza como vista y no toca ningún documento.
       // El texto sale del catálogo —que es el dato— y solo el nombre de la
@@ -449,11 +534,18 @@ function arrancar(raiz, estanciaPedida = null) {
       // Y cualquier otro punto retira la cartela anterior: quedarse puesta al
       // pasar a la pieza de al lado sería atribuirle el texto equivocado.
       else pintarCartela(null);
+      // Alejarse de un asiento para acercarse a otra cosa también lo suelta: el
+      // punto activo es UNO (#582), y recordar el anterior sentaría a quien
+      // pulsa `f` delante de una consola en la silla que dejó atrás.
+      if (accion?.tipo !== "asiento") asientoAlAlcance = null;
     },
     // Alejarse la retira (#598). Va por el flanco de SALIDA del bucle y no por
     // un temporizador: una cartela se deja de leer cuando te apartas, no cuando
     // pasan unos segundos.
-    alSalirDeInteraccion: () => pintarCartela(null),
+    alSalirDeInteraccion: () => {
+      pintarCartela(null);
+      asientoAlAlcance = null;
+    },
     // El de la estancia de ARRANQUE, no el de la nave (#587). Sin esto, abrir
     // directamente en un exterior pintaba su cielo con el gris de entre salas y
     // solo se corregía al cambiar de estancia — que en la playa no pasa nunca,
@@ -465,7 +557,39 @@ function arrancar(raiz, estanciaPedida = null) {
     // solo la lista ya resuelta de ese instante.
     otrosJugadores: jugadoresParaRender,
   });
-  const desenganchar = engancharTeclado(raiz, mando);
+  const desenganchar = engancharTeclado(raiz, mando, {
+    /**
+     * `f`: siéntate en lo que tengas delante, o levántate si ya estás sentado.
+     *
+     * Levantarse manda sobre sentarse cuando las dos cosas son posibles —estás
+     * sentado en una silla y tienes otra al alcance—, porque si no la tecla
+     * dejaría de tener forma de salir: te cambiaría de silla para siempre.
+     * Dónde acaban los ojos lo calcula `nave-asiento.mjs` a partir de lo que
+     * mide el mueble; aquí no hay ni una altura escrita.
+     */
+    alternarAsiento: () => {
+      if (mando.estaSentado()) {
+        const ocupado = mando.asientoOcupado();
+        mando.levantarse();
+        // La silla vuelve a su sitio al levantarse. Es la otra mitad de lo que
+        // hace que la pose signifique algo: si se quedara retirada, «retirada»
+        // dejaría de querer decir «aquí hay alguien» a la segunda vez.
+        if (ocupado) recomponerConPose(ocupado, "libre");
+        return;
+      }
+      if (!asientoAlAlcance) return;
+      // El mueble se pone en pose ANTES de sentarse, y el sitio sale de dónde
+      // queda ya retirado: sentarse en las coordenadas de la silla libre te
+      // dejaría veinticinco centímetros por delante de ella, de pie en el aire.
+      const colocado = asientoAlAlcance.prop ? recomponerConPose(asientoAlAlcance.prop, "ocupada") : null;
+      const asiento = colocado?.asiento ?? {
+        punto: asientoAlAlcance.punto,
+        orientacion: asientoAlAlcance.orientacion,
+        altura: asientoAlAlcance.altura,
+      };
+      mando.sentarse(resolverAsiento(asiento, { yaw: mando.posicion().yaw }), asientoAlAlcance.prop ?? null);
+    },
+  });
 
   // Publicación periódica mientras la ventana está abierta: `debeMuestrear`
   // hace el throttle real (~150ms), este intervalo solo ofrece la
@@ -499,6 +623,28 @@ function arrancar(raiz, estanciaPedida = null) {
    * los dos pasen por aquí es justo lo que evita que el rótulo de sala y la
    * muestra publicada se desincronicen.
    */
+  /**
+   * Pone un mueble en una pose, recompone la estancia y devuelve dónde queda.
+   *
+   * La ventana no sabe qué es una silla: le pide a la estancia cómo queda con
+   * esas poses (`conPoses`, opaco en el catálogo) y le pasa al bucle la planta y
+   * el compositor nuevos. Una estancia sin muebles con pose devuelve `null` y
+   * aquí no pasa nada — que es lo que hacen las catorce menos la terraza.
+   */
+  function recomponerConPose(propId, pose) {
+    const estancia = CATALOGO_ANDAR.obtener(estanciaActual);
+    if (typeof estancia?.conPoses !== "function") return null;
+    const poseables = estancia.poseables ?? null;
+    const anteriores = posesPorEstancia.get(estanciaActual) ?? {};
+    const siguientes = poseables
+      ? ponerPose(poseables, anteriores, propId, pose)
+      : Object.freeze({ ...anteriores, [propId]: pose });
+    posesPorEstancia.set(estanciaActual, siguientes);
+    const recompuesta = estancia.conPoses(siguientes);
+    mando.recomponer(recompuesta);
+    return recompuesta.colocados?.find?.((c) => c.id === propId) ?? null;
+  }
+
   function irAEstancia(estanciaId) {
     const llegada = puntoDeLlegada(CATALOGO_ANDAR, { estancia: estanciaId });
     if (!llegada) return false;
@@ -570,11 +716,22 @@ export function crearClaseAndarV2() {
      *  volver a donde se quedó, no al último sitio que pidió la sección. */
     estanciaPedida = null;
 
-    /** Con la ventana ya abierta, ir a esa estancia en caliente. */
+    /**
+     * Con la ventana ya abierta, ir a esa estancia en caliente.
+     *
+     * SE ANOTA COMO PEDIDA AUNQUE EL VIAJE YA SE HAYA HECHO. Quien llama a esto
+     * casi siempre renderiza justo después para traer la ventana al frente, y un
+     * render vuelve a montar el bucle: sin la anotación, esa segunda resolución
+     * cae en el CHECKPOINT guardado y deshace el viaje —pulsar «museo» con la
+     * ventana ya abierta dejaba en la cantina, que es donde se cerró la última
+     * vez (QA 2026-08-26)—. El checkpoint ni siquiera se ha escrito todavía
+     * cuando eso ocurre, porque la muestra va a un flag y eso es asíncrono: se
+     * estaba obedeciendo a la posición de hace un rato. Se consume en el primer
+     * render, como cualquier otra petición.
+     */
     irA(estanciaId) {
-      if (this.mando) return this.mando.irA(estanciaId);
       this.estanciaPedida = estanciaId;
-      return false;
+      return this.mando ? this.mando.irA(estanciaId) : false;
     }
 
     _onRender(context, options) {
@@ -616,9 +773,8 @@ export function crearClaseAndarV1() {
     estanciaPedida = null;
 
     irA(estanciaId) {
-      if (this.mando) return this.mando.irA(estanciaId);
       this.estanciaPedida = estanciaId;
-      return false;
+      return this.mando ? this.mando.irA(estanciaId) : false;
     }
 
     activateListeners(html) {

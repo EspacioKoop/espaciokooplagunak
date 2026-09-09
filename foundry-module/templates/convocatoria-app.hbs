@@ -1,0 +1,23 @@
+<form>
+  <div class="form-group">
+    <label for="idEstancia">{{i18n "LAGUNAK.PanelGM.Convocatoria.Label.Estancia"}}</label>
+    <select id="idEstancia" name="idEstancia" class="form-control">
+      {{#each categorias}}
+        <optgroup label="{{i18n titulo}}">
+          {{#each estancias}}
+            <option value="{{id}}">{{id}}</option>
+          {{/each}}
+        </optgroup>
+      {{/each}}
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="rolConvocante">{{i18n "LAGUNAK.PanelGM.Convocatoria.Label.Rol"}}</label>
+    <select id="rolConvocante" name="rolConvocante" class="form-control">
+      {{#each roles}}
+        <option value="{{id}}">{{id}}</option>
+      {{/each}}
+    </select>
+  </div>
+  <button type="submit" class="btn btn-primary">{{i18n "LAGUNAK.PanelGM.Convocatoria.Submit"}}</button>
+</form>

@@ -19,7 +19,7 @@ quién puede ver el dato y quién puede emitir la orden.
 
 ## Método
 
-1. Lee `AGENTS.md`, `CLAUDE.md`, `docs/FOUNDRY.md`, `docs/BRIDGE_THREAT_MODEL.md` y los ADR
+1. Lee `AGENTS.md`, `CLAUDE.md`, `docs/FOUNDRY.md`, `docs/seguridad/BRIDGE_THREAT_MODEL.md` y los ADR
    relacionados con autoridad antes de revisar el diff.
 2. Sigue el flujo de cada dato y gesto desde la UI hasta el módulo puro, socket, relé o puente.
    Comprueba identidad del usuario, rol GM, puesto titular, visibilidad, degradación, deduplicación

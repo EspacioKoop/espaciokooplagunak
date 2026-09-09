@@ -22,7 +22,7 @@ del módulo Foundry que consumen `/v1/*`. No eres el implementador ni el QA gene
 
 ## Método
 
-1. Lee `AGENTS.md`, `CLAUDE.md`, `docs/BRIDGE_THREAT_MODEL.md`, `docs/BRIDGE_AUTHENTICATION.md`,
+1. Lee `AGENTS.md`, `CLAUDE.md`, `docs/seguridad/BRIDGE_THREAT_MODEL.md`, `docs/seguridad/BRIDGE_AUTHENTICATION.md`,
    `docs/FOUNDRY.md` y `bridge/README.md` antes de juzgar una decisión.
 2. Inspecciona el diff y sigue cada dato no confiable desde la petición hasta la respuesta o la
    plantilla Lua. Comprueba especialmente allowlists, enums, rangos, campos extra, tamaños,

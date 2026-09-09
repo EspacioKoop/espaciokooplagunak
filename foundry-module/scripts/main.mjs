@@ -66,6 +66,10 @@ import {
   registrarContenidoExterno,
 } from "./contenido-externo/ventana.mjs";
 import {
+  abrirSonidoFreesound,
+  registrarSonidoFreesound,
+} from "./sonido-freesound/ventana.mjs";
+import {
   abrirMesa,
   estadoPublicoVigente,
   pedirVista,
@@ -86,6 +90,7 @@ import { crearClasePanelGMV1, crearClasePanelGMV2 } from "./panel-gm-app.mjs";
 import { construirHerramientasGM } from "./herramientas-gm-catalogo.mjs";
 import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave/seccion-nave-app.mjs";
 import { construirHerramientasPublicas } from "./herramientas-publicas-catalogo.mjs";
+import { crearClaseParlamentoSelectorV1, crearClaseParlamentoSelectorV2 } from "./parlamento-selector-app.mjs";
 import { crearClaseAndarV1, crearClaseAndarV2 } from "./andar-nave-app.mjs";
 import { salaDePuesto } from "./seccion-nave/seccion-nave.mjs";
 import { registrarPreset as registrarPresetBaraja } from "./minijuegos/baraja-preset.mjs";
@@ -108,6 +113,7 @@ import {
   OPCIONES_GRANO,
   registrarSincroniaFiltros,
 } from "./filtros-escena.mjs";
+import { abrirParlamento, establecerEstadoParlamento } from "./parlamento-ventana.mjs";
 import { AJUSTE_BASE_DATOS, AJUSTE_TELEMETRIA } from "./ship-view/telemetria-difusion.mjs";
 import {
   IDIOMA_AUTOMATICO,
@@ -135,12 +141,18 @@ import {
 } from "./arte/audio/musica-mando.mjs";
 import { crearReproductor } from "./arte/audio/musica-reproductor.mjs";
 import { crearGrupo } from "./control-escena.mjs";
+import {
+  addImportadorAtlasControl,
+  registrarImportadorAtlas,
+} from "./atlas-importar-ventana.mjs";
 
 registerStationFeature(MODULE_ID);
 registerAvatarFeature(MODULE_ID);
 registerWorkspaceFeature(MODULE_ID);
 registerBridgeTokenFeature(MODULE_ID);
 registrarContenidoExterno(MODULE_ID);
+registrarSonidoFreesound(MODULE_ID);
+registrarImportadorAtlas(MODULE_ID);
 
 // Consola caliente del GM (#276): fusión de estado+mapa+encuentros+
 // previsualización con un solo bucle. Una sola ventana, V1 (Application,
@@ -661,6 +673,21 @@ const ACCIONES_PANEL_GM = {
   decorado: () => regenerarDecoradoAleatorio(),
   ficha: () => aplicarFichaNave(),
   convocatoria: () => abrirConvocatoria(),
+  sonido: () => abrirSonidoFreesound(),
+  "parlamento-selector": () => {
+    const Clase = foundry.applications?.api?.ApplicationV2
+      ? crearClaseParlamentoSelectorV2({ alSeleccionarEncuentro: (encuentro) => {
+          abrirParlamento();
+          establecerEstadoParlamento(encuentro, encuentro.desafio ?? 1, null);
+        } })
+      : crearClaseParlamentoSelectorV1({ alSeleccionarEncuentro: (encuentro) => {
+          abrirParlamento();
+          establecerEstadoParlamento(encuentro, encuentro.desafio ?? 1, null);
+        } });
+    const app = new Clase();
+    if (foundry.applications?.api?.ApplicationV2) app.render({ force: true });
+    else app.render(true);
+  },
 };
 
 function abrirPanelGM() {
@@ -936,6 +963,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // Y el diagnóstico de contenido importado, que sí es solo del GM: enseña el
   // estado del MUNDO del anfitrión, no información de partida.
   addContenidoExternoControl(controls);
+  addImportadorAtlasControl(controls);
   // Y el de echar una mano, que ve TODA la tripulación: ayudar es cruzar de
   // puesto por definición, y un botón solo-GM no sería cooperación.
   addAsistenciaControl(controls);

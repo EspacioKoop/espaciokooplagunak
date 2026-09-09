@@ -229,7 +229,9 @@ export const INTERACCIONES = declararInteracciones([
   })),
   {
     id: "salida",
-    punto: [SALIDA.centro[0], SALIDA.centro[2] + 0.9],
+    // Acercarse al torno, sin incluir el punto de llegada en el disparador.
+    punto: [SALIDA.centro[0], SALIDA.centro[2] + SALIDA.medidas[2] / 2],
+    radio: 0.35,
     orientacion: Math.PI,
     accion: { tipo: "estancia", estancia: "cantina" },
   },

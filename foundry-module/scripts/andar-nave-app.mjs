@@ -697,6 +697,9 @@ function arrancar(raiz, estanciaPedida = null) {
     // solo la lista ya resuelta de ese instante.
     otrosJugadores: jugadoresParaRender,
   });
+  // La plantilla empieza con el HUD vacío: anunciar también la llegada,
+  // no solo los cambios de estancia posteriores (puertas o irA).
+  rotularSala(estanciaActual);
   const desenganchar = engancharTeclado(raiz, mando, {
     /**
      * `f`: usa lo que tengas delante. Hoy son dos cosas —sentarse/levantarse

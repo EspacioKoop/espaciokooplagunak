@@ -43,6 +43,7 @@
 // Puro: datos y nada más.
 
 import { COMPOSICIONES } from "./museo-cuadro.mjs";
+import { registrarCatalogoPiezas } from "./catalogo-piezas.mjs";
 
 /** Los IDs de composición que existen. El registro contra el que valida el
  *  catálogo: una ficha que apunte a un dibujo que no está no llega a la sala. */
@@ -194,3 +195,7 @@ export const CATALOGO_CUADROS = Object.freeze({
     }),
   ]),
 });
+
+// Se registra en el punto único de resolución (#598), igual que las esculturas:
+// quien pinta una cartela pide la pieza por su id y no sabe de qué sala es.
+registrarCatalogoPiezas(CATALOGO_CUADROS);

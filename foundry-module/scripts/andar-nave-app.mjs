@@ -27,10 +27,14 @@ import { presentesEn } from "./nave-presencia.mjs";
 import { avatarDeUsuario } from "./avatar/avatar-assignment.mjs";
 import { openWorkspaceApp } from "./station-workspace-ui.mjs";
 import { SECCION } from "./paleta.mjs";
-import { cartelaDe, piezaPorId } from "./catalogo-piezas.mjs";
-import { CATALOGO_MUSEO } from "./museo-piezas.mjs";
-import { CATALOGO_CUADROS } from "./museo-cuadros.mjs";
-import { CATALOGO_PASILLO } from "./pasillo-recuerdos-piezas.mjs";
+import { cartelaDe, getPiezaCatalogada } from "./catalogo-piezas.mjs";
+// Registran su catálogo en el punto único de resolución (#598). Este módulo no
+// necesita saber en cuál de ellos vive una pieza: solo que existe. Los tres son
+// las esculturas del museo, los cuadros de la pared (#836) y el pasillo de los
+// recuerdos.
+import "./museo-piezas.mjs";
+import "./museo-cuadros.mjs";
+import "./pasillo-recuerdos-piezas.mjs";
 import { resolverAsiento } from "./nave-asiento.mjs";
 import { ponerPose } from "./nave-pose.mjs";
 import { resolverInvestigacion, PROCEDENCIA_SRD_TEXTO } from "./libro-srd-investigacion.mjs";
@@ -332,12 +336,8 @@ function arrancar(raiz, estanciaPedida = null) {
     // Tres catálogos y una sola lectura: las esculturas, los cuadros de la
     // pared (#836) y las piezas del pasillo de los recuerdos se colocan
     // distinto en su sala, pero la cartela se lee igual en los tres. Un
-    // `accion.pieza` es un id opaco y aquí se resuelve contra los tres.
-    const pieza = piezaId
-      ? piezaPorId(CATALOGO_MUSEO, piezaId)
-        ?? piezaPorId(CATALOGO_CUADROS, piezaId)
-        ?? piezaPorId(CATALOGO_PASILLO, piezaId)
-      : null;
+    // `accion.pieza` es un id opaco y el registro lo resuelve contra todos.
+    const pieza = piezaId ? getPiezaCatalogada(piezaId) : null;
     if (!pieza) {
       nodo.hidden = true;
       return;

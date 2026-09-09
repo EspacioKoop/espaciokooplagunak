@@ -264,6 +264,18 @@
         "type": "issue",
         "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1024"
       }
+    },
+    {
+      "module": "escena-contrato.mjs",
+      "status": "declared-orphan",
+      "foundation": true,
+      "reason": "Contrato versionado de escena render-agnóstica (#1033): separa estado autoritativo, presentación y recursos para que el mismo dato de escena valga con backend software o GPU. Sin consumidor todavía a propósito: el primero es la integración standalone de #1035, y cablearlo antes ataría el contrato al único render que hoy existe, que es lo que #1003 quiere evitar.",
+      "declaredBy": "Espaciokoop Lagunak",
+      "declaredAt": "2026-09-09",
+      "evidence": {
+        "type": "issue",
+        "url": "https://github.com/EspacioKoop/espaciokooplagunak/issues/1033"
+      }
     }
   ],
   "artInventoryRationale": {

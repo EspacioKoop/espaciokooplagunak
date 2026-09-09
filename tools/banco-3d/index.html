@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Banco de pruebas — retro3d</title>
+<style>
+  body { background: #0b0f14; color: #cfe8ff; font: 13px system-ui, sans-serif; margin: 0; padding: 12px; }
+  #controles { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+  label { display: flex; gap: 4px; align-items: center; }
+  canvas { image-rendering: pixelated; background: #000; border: 1px solid #244; }
+  #lienzo-wrap { display: inline-block; }
+  #estado { margin-top: 6px; opacity: 0.7; }
+</style>
+</head>
+<body>
+  <h1 style="font-size:14px;margin:0 0 8px">Banco de pruebas del motor 3D (#976)</h1>
+  <div id="controles">
+    <label>Malla
+      <select id="malla">
+        <option value="figura">figura desnuda</option>
+        <option value="figura-espada">figura + espada</option>
+        <option value="espada">espada sola</option>
+        <option value="jarra">jarra</option>
+        <option value="linterna">linterna</option>
+        <option value="tablilla">tablilla</option>
+      </select>
+    </label>
+    <label>Época
+      <select id="epoca">
+        <option value="psx">PSX</option>
+        <option value="gamecube">GameCube</option>
+      </select>
+    </label>
+    <label>Giro cámara (yaw, rad)
+      <input id="yaw" type="range" min="-3.1416" max="3.1416" step="0.01" value="0.6" />
+      <output id="yaw-valor">0.60</output>
+    </label>
+    <label>Fase de animación (0–1)
+      <input id="fase" type="range" min="0" max="1" step="0.01" value="0" />
+      <output id="fase-valor">0.00</output>
+    </label>
+  </div>
+  <div id="lienzo-wrap"><canvas id="lienzo" width="320" height="240"></canvas></div>
+  <div id="estado">—</div>
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>

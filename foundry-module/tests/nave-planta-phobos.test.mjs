@@ -50,8 +50,13 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
  * mismo motivo: es una sala de 2x2 m para probar la geometría y la
  * interacción del libro sin el resto del museo alrededor, no un sitio al que
  * se llegue andando desde la cantina.
+ *
+ * La arena de combate (#1013) cierra la lista por ahora, y por el mismo
+ * argumento llevado al extremo: un claro de cuarenta y cinco metros no cabe
+ * dentro de una fragata. Colgarla de un mamparo contaría que el Phobos lleva
+ * un campo de batalla a bordo, que es una historia que nadie ha decidido.
  */
-const FUERA_DE_LA_NAVE = new Set(["playa", "museo", "pasillo-recuerdos", "libro"]);
+const FUERA_DE_LA_NAVE = new Set(["playa", "museo", "pasillo-recuerdos", "arena", "libro"]);
 
 function todasLasEstancias() {
   const pares = CATALOGO_ANDAR.ids

@@ -181,6 +181,20 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     correcto, una decena es un enlace copiado. Para declarar o
     reclasificar un módulo, edita el JSON y ejecuta
     `python3 scripts/check_orphan_modules.py --check` más las suites Python y Node del área.
+    Que `unknown` no rompa CI protege a lo que YA está en el árbol, no a lo que llega: por esa
+    puerta entraron `combatiente-pixelart.mjs` (#1018) y estuvieron a punto de entrar los doce
+    módulos del bloque de combate (#1012–#1035) a la vez. De ahí la guarda sobre el **delta**:
+    `--nuevos <fichero>` recibe las rutas que el PR ESTRENA (`git diff --diff-filter=A base...HEAD`)
+    y exige que cada módulo nuevo quede `connected` o declarado — un `unknown` heredado sigue sin
+    bloquear a nadie, pero uno recién escrito sí, porque quien acaba de escribirlo es justo quien
+    sabe si es un cimiento deliberado o un cable que se olvidó. Corre en el job `tests` de
+    `foundry-module.yml`, solo en `pull_request` (en un push a `main` no hay base con la que
+    comparar). Caza además el otro escape de la misma tanda: un módulo nuevo con colores propios
+    fuera de `artModules`, que `paleta.test.mjs` no puede ver porque solo recorre esa lista.
+    `--proponer` imprime el esqueleto de la declaración que falta y `--escribir` lo aplica, pero
+    **el motivo y la evidencia van marcados con `RELLENAR` y la validación los rechaza** hasta que
+    alguien los escriba: una herramienta que los inventara sería el relleno de #822 generado más
+    deprisa, no una automatización.
   - **Ventanas** — **Consola caliente del GM** (#276, `docs/CONSOLA_CALIENTE_GM.md`) fusionó las
     cuatro factorías originales (estado de nave y mapa vivo, V1/V2) en una sola ventana con pestañas
     (Estado, Mapa, Encuentros, Previsualización) y UN solo bucle de sondeo y backoff, sustituyendo

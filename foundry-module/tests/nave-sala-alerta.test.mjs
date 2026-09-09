@@ -65,7 +65,7 @@ test("la sala con el sistema dañado parpadea, y la de al lado no", () => {
     tiempo: TIEMPO_APAGADO,
   }));
   assert.ok(reactorEncendido.has(LUZ_CALIDA));
-  assert.ok(reactorApagado.has(0x000000), "la mitad apagada llega al lienzo como difusor negro emisivo");
+  assert.ok(reactorApagado.has("#000000"), "la mitad apagada llega al lienzo como difusor negro emisivo");
   assert.equal(reactorApagado.has(LUZ_CALIDA), false);
 
   // La misma telemetría y la misma marca de tiempo en la sala sana: quieta.
@@ -92,7 +92,7 @@ test("la alerta y la avería son lecturas independientes", () => {
     saludSistemas,
     tiempo: TIEMPO_APAGADO,
   }));
-  assert.ok(apagada.has(0x000000));
+  assert.ok(apagada.has("#000000"));
   assert.equal(apagada.has(ALERTA.niveles.roja.borde), false);
 });
 

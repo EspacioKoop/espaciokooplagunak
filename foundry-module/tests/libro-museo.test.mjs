@@ -65,10 +65,54 @@ test("el presupuesto documentado: la página no se compone hasta pasar el umbral
   const abiertoDeVerdad = { fase: "abierto", apertura: 0.5, hojaVuelo: 0, paginaActual: 0, transicion: null };
 
   assert.equal(piezasLibroEnSala(apenasAbierto).length, 1, "solo el cuerpo, sin página, por debajo del umbral");
-  assert.equal(piezasLibroEnSala(abiertoDeVerdad).length, 2, "cuerpo + página, por encima del umbral");
+  assert.ok(piezasLibroEnSala(abiertoDeVerdad).length > 1, "cuerpo + materiales de página, por encima del umbral");
 });
 
 test("ATRIL_LIBRO tiene una posición y altura sensatas dentro de la sala", () => {
   assert.ok(ATRIL_LIBRO.x > 0 && ATRIL_LIBRO.z > 0);
   assert.ok(ATRIL_LIBRO.altura > 0 && ATRIL_LIBRO.altura < 2);
+});
+
+import { ALTURA_OJOS } from "../scripts/nave-camara.mjs";
+import { ANCHO_PAGINA, ALTO_PAGINA, TOPE_PAGINA } from "../scripts/libro-pagina.mjs";
+import { PAGINA } from "../scripts/paleta.mjs";
+
+test("el libro completo queda encuadrado de pie durante apertura y paso", () => {
+  const [cx, cz] = PUNTO_LIBRO.punto;
+  const yaw = PUNTO_LIBRO.orientacion;
+  const focal = 480 / (2 * Math.tan(62 * Math.PI / 360));
+  for (let paso = 0; paso <= 20; paso++) {
+    for (const estado of [
+      { apertura: paso * Math.PI / 40, hojaVuelo: 0, paginaActual: 0 },
+      { apertura: Math.PI / 2, hojaVuelo: paso * Math.PI / 40, paginaActual: 0 },
+    ]) {
+      const piezas = piezasLibroEnSala(estado);
+      for (const { malla } of piezas) for (const [x,y,z] of malla.vertices) {
+        const depth = (x-cx)*Math.sin(yaw)+(z-cz)*Math.cos(yaw);
+        const lateral = (x-cx)*Math.cos(yaw)-(z-cz)*Math.sin(yaw);
+        const sx = 240 + focal*lateral/depth, sy = 135-focal*(y-ALTURA_OJOS)/depth;
+        assert.ok(depth > 0 && sx > 8 && sx < 472 && sy > 8 && sy < 262,
+          `vértice fuera del encuadre: ${sx}, ${sy}`);
+      }
+      assert.ok(piezas.slice(1).reduce((n,p)=>n+p.malla.caras.length,0) <= TOPE_PAGINA);
+    }
+  }
+});
+
+test("la página conserva anchura, altura, materiales y normales hacia quien lee", () => {
+  const piezas = piezasLibroEnSala({ apertura: Math.PI/2, hojaVuelo: 0, paginaActual: 0 }).slice(1);
+  assert.ok(piezas.some(p=>p.color===PAGINA.papel));
+  assert.ok(new Set(piezas.map(p=>p.color)).size > 1);
+  const vertices=piezas.flatMap(p=>p.malla.vertices);
+  const ys=vertices.map(v=>v[1]);
+  assert.ok(Math.abs(Math.max(...ys)-Math.min(...ys)-ALTO_PAGINA)<1e-9);
+  const zs=vertices.map(v=>v[2]);
+  assert.ok(Math.max(...zs)-Math.min(...zs)>ANCHO_PAGINA/2);
+  const [cx,cz]=PUNTO_LIBRO.punto;
+  for(const {malla} of piezas) for(const face of malla.caras){
+    const [a,b,c]=face.map(i=>malla.vertices[i]);
+    const u=b.map((v,i)=>v-a[i]),v=c.map((v,i)=>v-a[i]);
+    const normal=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+    assert.ok(normal[0]*(cx-a[0])+normal[1]*(ALTURA_OJOS-a[1])+normal[2]*(cz-a[2])>0);
+  }
 });

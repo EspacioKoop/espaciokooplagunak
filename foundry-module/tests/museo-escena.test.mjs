@@ -14,10 +14,61 @@ import {
   PLANTA_MUSEO,
   componerMuseo,
   colocarPieza,
+  LIBRO_MUSEO,
+  marcadorLibroMuseo,
 } from "../scripts/museo-escena.mjs";
 import { FICHAS } from "../../tools/convertir-estatua.mjs";
 import { colisiona } from "../scripts/nave-movimiento.mjs";
 import { interaccionAlAlcance } from "../scripts/nave-interaccion.mjs";
+
+test("el museo expone un libro 3D como interacción SRD efímera", () => {
+  const libro = INTERACCIONES.find((interaccion) => interaccion.id === "libro-srd-museo");
+  assert.deepEqual(libro.accion, LIBRO_MUSEO.accion);
+  const marcador = marcadorLibroMuseo({ habilidad: "arcana", dc: 12, total: 14, exito: true });
+  assert.equal(marcador.estado, "exito");
+  assert.deepEqual(marcador.posicion, [LIBRO_MUSEO.centro[0], LIBRO_MUSEO.centro[1] + 0.45, LIBRO_MUSEO.centro[2]]);
+});
+
+test("el marcador de investigación llega de verdad a los polígonos compuestos desde el punto real de interacción, y desaparece sin él", () => {
+  // Cierra el hueco que señaló la review de OTACON Astra en #1038: el click
+  // de la ventana escribía `textContent` pero nunca le pasaba el resultado a
+  // la escena. Este test comprueba la costura completa —
+  // marcadorLibroMuseo() -> opciones.marcador -> componerMuseo() ->
+  // polígonos— sin pasar por el DOM, mirando la escena que de verdad se
+  // manda a pintar.
+  //
+  // NO se prueba desde `ENTRADA`: `interaccionAlAlcance` dispara por
+  // proximidad únicamente (nave-interaccion.mjs no comprueba hacia dónde
+  // mira quien interactúa), así que el punto real desde el que se ve el
+  // resultado es el de la interacción declarada (`INTERACCIONES`), mirando
+  // hacia el libro — no la entrada de la sala, que queda lejos y de
+  // espaldas. El yaw se calcula hacia el libro en vez de fijarlo a mano,
+  // para que este test no se desalinee en silencio si algún día cambia la
+  // geometría de la sala.
+  const libro = INTERACCIONES.find((interaccion) => interaccion.id === "libro-srd-museo");
+  const [px, pz] = libro.punto;
+  const yawHaciaLibro = Math.atan2(LIBRO_MUSEO.centro[0] - px, LIBRO_MUSEO.centro[2] - pz);
+
+  const sinMarcador = componerMuseo(px, 0, pz, yawHaciaLibro, { ancho: 320, alto: 180 });
+
+  const marcador = marcadorLibroMuseo({ habilidad: "investigacion", dc: 12, total: 18, exito: true });
+  const conMarcador = componerMuseo(px, 0, pz, yawHaciaLibro, { ancho: 320, alto: 180, marcador });
+
+  // No se exige la aritmética exacta de caras del prisma (`componerEscena`
+  // recorta contra el frustum y descarta caras de espaldas, así que el
+  // número de polígonos que sobreviven no es 1:1 con `marcador.malla.caras`):
+  // lo que hace falta demostrar es que ALGO entró, no cuánto.
+  assert.ok(
+    conMarcador.poligonos.length > sinMarcador.poligonos.length,
+    `con marcador debería haber más polígonos (${sinMarcador.poligonos.length} sin, ${conMarcador.poligonos.length} con) — si esto falla, el marcador volvió a caer fuera del cono de visión a la distancia real de interacción (ver el comentario de marcadorLibroMuseo)`,
+  );
+
+  // Sin marcador (interacción cerrada, `alSalirDeInteraccion` ya lo puso a
+  // null), la escena vuelve a ser exactamente la de antes: nada de un
+  // marcador "atascado" un fotograma más de la cuenta.
+  const trasRetirarlo = componerMuseo(px, 0, pz, yawHaciaLibro, { ancho: 320, alto: 180, marcador: null });
+  assert.equal(trasRetirarlo.poligonos.length, sinMarcador.poligonos.length);
+});
 
 test("una pieza real del museo con rig atraviesa colocarPieza y sale deformada (#603 fase 4)", () => {
   // Ninguna pieza del catálogo declara rig todavía (nada real que doblar), así
@@ -135,14 +186,10 @@ test("la salida devuelve a la nave, y es lo único que transporta en toda la sal
 });
 
 test("NADA en la sala concede, cuenta ni recuerda (docs/FOUNDRY.md)", () => {
-  // Las únicas acciones posibles son leer una cartela, salir y abrir el libro
-  // (#853, vertical 2). "libro" se sumó aquí a propósito y no por descuido: es
-  // una decisión de diseño, y por eso la prueba la nombra en vez de limitarse
-  // a no fallar. Sigue sin haber nada que conceda, cuente ni recuerde — el
-  // libro se abre y se pasa, y `libro-sesion.mjs` lo resetea al alejarse, la
-  // misma regla instantánea que ya tenía la cartela.
+  // Visita efímera: cartelas, investigación y animación no guardan progreso.
   const tipos = new Set(INTERACCIONES.map((punto) => punto.accion?.tipo));
-  assert.deepEqual([...tipos].sort(), ["cartela", "estancia", "libro"]);
+  assert.deepEqual([...tipos].sort(), ["cartela", "estancia", "investigar-libro", "libro"]);
+
 });
 
 test("se entra dentro de la sala, en suelo libre y mirando a las piezas", () => {

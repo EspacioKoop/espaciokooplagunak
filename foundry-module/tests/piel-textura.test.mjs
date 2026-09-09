@@ -83,11 +83,12 @@ test("cabe de sobra en una paleta indexada", () => {
 
 const MEDIDAS = medidasSala(SALAS_PHOBOS[0]);
 
-function componer(pielMuro) {
+function componer(pielMuro, opciones = {}) {
   const sala = crearSalaCaja({ ...MEDIDAS, puertas: [], mobiliario: [], pielMuro });
   return sala.componer(MEDIDAS.ancho / 2, 0, MEDIDAS.profundidad / 2 - 2, 0.35, {
     ancho: 640,
     alto: 400,
+    ...opciones,
   });
 }
 
@@ -123,8 +124,29 @@ test("el paño mira hacia la sala, no hacia dentro del muro", () => {
 
 test("texturar quita la mayor parte de la geometría de una sala", () => {
   // El número que resolvió #584: la piel del muro era casi toda la sala.
-  const geo = componer("geometria").poligonos.length;
-  const tex = componer("textura").poligonos.length;
+  //
+  // SE DESCUENTA EL HAZ. Desde que las luminarias dibujan su cono y su polvo,
+  // la escena tiene un suelo fijo de polígonos que NINGÚN modo de piel quita
+  // —van con la lámpara, no con el muro— y que se cuela igual en los dos
+  // lados de la división. Contarlos hacía que la rebaja pareciera empeorar de
+  // 0,228 a 0,283 sin que la piel hubiera cambiado ni un polígono: descontados,
+  // los dos modos dan exactamente los mismos 413 y 94 que antes de que
+  // existiera el haz.
+  //
+  // El descuento se DERIVA de `alpha` y no se escribe como número, que es lo
+  // que hace que siga valiendo: al repartir el polvo por el haz (aceptación
+  // visual de #556) las motas pasaron de 5 a 10 por luminaria y la cuenta fija
+  // cambió sola, sin tocar esta prueba.
+  //
+  // Se distinguen por `alpha`: el haz y las motas son lo único traslúcido de
+  // una sala. Si algún día lo es algo más, este filtro deja de valer y hay que
+  // marcar el haz explícitamente.
+  const sinHaz = (piel) => {
+    const poligonos = componer(piel).poligonos;
+    return poligonos.length - poligonos.filter((p) => Number.isFinite(p.alpha)).length;
+  };
+  const geo = sinHaz("geometria");
+  const tex = sinHaz("textura");
   assert.ok(tex < geo / 4, `de ${geo} a ${tex} no es la rebaja que se esperaba`);
 });
 
@@ -187,4 +209,33 @@ test("un foco cercano aclara unos cuadros del paño más que otros", () => {
   const min = Math.min(...intensidades);
   const max = Math.max(...intensidades);
   assert.ok(max - min > 0.05, `intensidades demasiado uniformes: min=${min} max=${max}`);
+});
+
+/* ---- las luminarias iluminan, pero no se comen el presupuesto de focos ----- */
+
+test("un foco declarado por la escena sobrevive a las luminarias de la sala", () => {
+  // LA TRAMPA QUE ESTO VIGILA. Desde que las luminarias son focos de verdad,
+  // una sala declara hasta 36 —una cada 4 m—, y el motor se queda con los
+  // `TOPE_FOCOS` (4) más CERCANOS al observador. Como las luminarias cuelgan
+  // del techo de la propia sala, SIEMPRE hay cuatro más cerca que cualquier
+  // foco que declare la escena: medido en la primera sala del Phobos, las
+  // cuatro elegidas estaban a 2,5 y 4,3 m, y el foco declarado —potencia 3, a
+  // 12 m— se caía de la lista sin que nada avisara.
+  //
+  // El síntoma no es un error: es que `focos` (#556) deja de hacer NADA en
+  // cualquier sala iluminada. La escena pide una luz, el módulo la acepta, y
+  // no se ve. Por eso `nave-sala-caja` reserva el presupuesto para la escena
+  // primero y rellena el resto con luminarias, y por eso se prueba aquí en vez
+  // de confiar en el comentario.
+  const conFoco = componer("textura", {
+    focos: [{ posicion: [MEDIDAS.ancho - 1, 1.8, MEDIDAS.profundidad - 0.3], potencia: 3, alcance: 8 }],
+  });
+  const sinFoco = componer("textura");
+  const niveles = (escena) =>
+    new Set(escena.poligonos.filter((p) => p.textura).map((p) => p.intensidad));
+
+  assert.ok(
+    niveles(conFoco).size > niveles(sinFoco).size,
+    "el foco de la escena no cambia nada: se lo han comido las luminarias",
+  );
 });

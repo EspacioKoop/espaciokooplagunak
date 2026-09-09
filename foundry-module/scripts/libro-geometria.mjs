@@ -41,14 +41,14 @@ export function libroGeometria(apertura, hojaVuelo, ancho = 0.2, alto = 0.15, gr
   }
 
   const alfa = Math.PI / 2 - apertura / 2;
-  const beta = Math.PI / 2 - hojaVuelo;
+  const beta = alfa + hojaVuelo;
   const partes = [];
 
-  // Tapas: cuelgan de la bisagra (x=0) a lados opuestos; se abren con el mismo α.
+  // Tapas: giros opuestos ±α para cerrar juntas y abrir un ángulo interior.
   const tapaIzq = cajaBisagrada(ancho, alto, grosor, -1);
   const tapaDer = cajaBisagrada(ancho, alto, grosor, +1);
   partes.push(transformar(tapaIzq, alfa, 0));
-  partes.push(transformar(tapaDer, alfa, 0));
+  partes.push(transformar(tapaDer, -alfa, 0));
 
   // Lomo: caja fina en el eje x=0 que une las tapas a lo largo de z.
   const lomo = cajaBisagrada(grosor, alto, grosor * 2, 0);
@@ -56,7 +56,7 @@ export function libroGeometria(apertura, hojaVuelo, ancho = 0.2, alto = 0.15, gr
 
   // Hoja: página sobre la tapa izquierda (lado -1), levantada grosor para no coincidir.
   const hoja = cajaBisagrada(ancho, alto, grosor / 2, -1);
-  partes.push(transformar(hoja, beta, grosor));
+  partes.push(transformar(hoja, beta, -grosor));
 
   let vertices = [];
   let caras = [];

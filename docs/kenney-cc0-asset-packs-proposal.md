@@ -9,6 +9,14 @@ aprobada a la doctrina de arte del proyecto. La importación propuesta se sigue
 en [#1052](https://github.com/EspacioKoop/espaciokooplagunak/pull/1052), que no debe
 confundirse con una integración en `main` o con un consumidor jugable.
 
+**Desenlace (2026-09-09).** De los tres, solo **Classic64** entró. Los dos packs
+de Elegant Crow se retiraron antes de integrar por el límite de procedencia que
+este mismo documento anticipaba: sus imágenes de Pixabay/Pexels no están
+acreditadas y esas plataformas prohíben la redistribución *standalone*. Las
+secciones 2 y 3 de abajo siguen describiendo material **no** importado. El
+detalle de la evidencia y la vía para desbloquearlos está en
+[`PROCEDENCIA_ASSETS.md`](PROCEDENCIA_ASSETS.md).
+
 ## 1. Classic64 Asset Library
 
 - **Autor:** Craig Snedeker.

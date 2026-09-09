@@ -15,17 +15,9 @@
 // rígido — nada de esto pretende ser el atril definitivo, es lo que hace falta
 // para que "acercarse, abrir, pasar página" sea real y medible.
 //
-// LA PÁGINA SE PEGA A LA HOJA CON SU PROPIO TRANSFORM, no con
-// `libro-pagina.colocarPagina`: esa función asume una cara de PARED (normal en
-// x o z, la convención de `chapaEnCara` en `nave-mural-pixel.mjs`), y la cara
-// visible de la hoja tiene la normal en SU eje y (es una placa fina). En vez
-// de forzar esa convención, se toma `mallaPagina(semilla)` —ya centrada, con
-// sus propias medidas iguales a las del libro (`ANCHO_PAGINA`/`ALTO_PAGINA`,
-// pasadas también a `libroGeometria` para que cubierta y página compartan
-// tamaño)— y se le aplica EXACTAMENTE el mismo giro y empuje que
-// `libro-geometria.mjs` aplica a la hoja internamente (rotación en z por
-// `β = π/2 − hojaVuelo`, empuje en y por `grosor`), para que quede pegada a su
-// cara superior sin duplicar la cadena de transformación entera.
+// La página conserva los materiales de `colocarPagina`, agrupados por color,
+// y sigue la misma bisagra que la hoja. El dibujo permanece procedural,
+// sin texto legible ni datos de partida.
 //
 // PRESUPUESTO (medido 2026-09-02, Node puro, `node --print`, sin lienzo):
 // libro cerrado → 32 vértices / 24 caras (solo el cuerpo; sin página, ver
@@ -44,7 +36,7 @@
 import { componerEscena, fundirEscenas } from "./retro3d.mjs";
 import { resolverCamara } from "./nave-camara.mjs";
 import { libroGeometria } from "./libro-geometria.mjs";
-import { mallaPagina, ANCHO_PAGINA, ALTO_PAGINA } from "./libro-pagina.mjs";
+import { colocarPagina, ANCHO_PAGINA, ALTO_PAGINA } from "./libro-pagina.mjs";
 import { PAGINA } from "./paleta.mjs";
 import { componerMuseo, ATRIL_LIBRO } from "./museo-escena.mjs";
 import { estadoLibroAhora } from "./libro-sesion.mjs";
@@ -88,38 +80,31 @@ function colocarEnAtril(malla, atril) {
       atril.altura + lz,
       atril.z + lx * s + ly * c,
     ]),
-    caras: malla.caras,
+    // Intercambiar y/z invierte la orientación: conservar las caras exteriores.
+    caras: malla.caras.map((cara) => [...cara].reverse()),
   };
 }
 
-/**
- * La página, transformada al mismo sistema que produce `libroGeometria` para
- * su hoja: mismo giro (`β = π/2 − hojaVuelo`) y mismo empuje (`grosor`) que
- * `transformar(hoja, β, grosor)` aplica internamente. `mallaPagina` entrega la
- * página centrada con la normal en su propio eje x (`x≈0`, y=altura,
- * z=anchura); aquí se remapea a las coordenadas locales de la hoja
- * (x=anchura invertida desde la bisagra, y=un pelo por encima de la cara,
- * z=altura) antes de aplicar ese giro/empuje.
- */
-function paginaSobreHoja(semilla, hojaVuelo) {
-  const pagina = mallaPagina(semilla);
-  const beta = Math.PI / 2 - hojaVuelo;
-  // `mallaPagina` entrega la página con la normal en su propio eje x (siempre
-  // ~0, es un plano sin relieve), altura en y, anchura en z. Se remapea a las
-  // coordenadas LOCALES de la hoja de `libroGeometria` (anchura en x medida
-  // desde la bisagra en 0 hasta -ancho, altura en z, y un pelo por encima de
-  // la cara en y) y LUEGO se le aplica el mismo giro/empuje que
-  // `libro-geometria.mjs` aplica a la hoja: rotar en z por `β` y trasladar en
-  // y por `GROSOR`.
-  const enLocalDeLaHoja = pagina.vertices.map(([, py, pz]) => [
-    -(pz + ANCHO_PAGINA / 2),
-    GROSOR / 4 + 0.003,
-    py,
-  ]);
-  return {
-    vertices: enLocalDeLaHoja.map((v) => trasladar(rotarZ(v, beta), [0, GROSOR, 0])),
-    caras: pagina.caras,
-  };
+/** La página canónica tiene normal x, altura y y anchura z. Se remapea a
+ *  la cara interior de la hoja y aplica su mismo giro y separación. */
+function paginaSobreHoja(semilla, apertura, hojaVuelo) {
+  const beta = Math.PI / 2 - apertura / 2 + hojaVuelo;
+  // `eje: "z"` recorre z, no declara una normal z. Preservar sus materiales.
+  const pagina = colocarPagina(semilla, {
+    eje: "z", plano: 0, sentido: 1, u0: -ANCHO_PAGINA / 2, largo: ANCHO_PAGINA,
+  });
+  const porColor = new Map();
+  for (const { malla, color } of pagina) {
+    if (!porColor.has(color)) porColor.set(color, { vertices: [], caras: [] });
+    const grupo = porColor.get(color);
+    const offset = grupo.vertices.length;
+    grupo.vertices.push(...malla.vertices.map(([, py, pz]) => trasladar(rotarZ([
+      -(pz + ANCHO_PAGINA / 2), -GROSOR / 4 - 0.003, py,
+    ], beta), [0, -GROSOR, 0])));
+    // La cara visible está hacia el interior (-y), no detrás de las tapas.
+    grupo.caras.push(...malla.caras.map((cara) => cara.map((i) => i + offset)));
+  }
+  return [...porColor].map(([color, malla]) => ({ color, malla }));
 }
 
 /**
@@ -141,8 +126,9 @@ export function piezasLibroEnSala(estado) {
   // presupuesto de la cabecera sin que nadie lo note.
   if (estado.apertura > 0.05) {
     const semilla = SEMILLA_LIBRO_BASE + estado.paginaActual;
-    const pagina = paginaSobreHoja(semilla, estado.hojaVuelo);
-    piezas.push({ malla: colocarEnAtril(pagina, ATRIL_LIBRO), color: PAGINA.papel });
+    for (const { malla, color } of paginaSobreHoja(semilla, estado.apertura, estado.hojaVuelo)) {
+      piezas.push({ malla: colocarEnAtril(malla, ATRIL_LIBRO), color });
+    }
   }
 
   return piezas;

@@ -178,3 +178,54 @@ el cono rojo y la silueta contra la niebla se leen enteros a esa resolución; un
 retrato o un interior se convierten en una mancha. La resolución no se sube para
 que quepa una cuarta —esa es la celda del lienzo, y bajarla o subirla es mover el
 mando de escala de todos los cuadros a la vez—.
+
+## The Open Window — Saki (semilla procedural para #853)
+
+Propuesta de obra de dominio público como semilla visual para el libro 3D
+interactuable de issue #853. No se redistribuye texto ni imagen escaneada: las
+páginas del libro se pintan proceduralmente como mancha tipográfica/atmosférica.
+
+| Obra | *The Open Window*, cuento de Saki (H. H. Munro). |
+|---|---|
+| **Qué es el fichero** | No se incluye archivo del libro. Solo se usa título, ambientación y estructura como seed para generación procedural de páginas en rejilla. |
+| **Autoría original** | Saki (H. H. Munro), fallecido en 1916. |
+| **Licencia** | Public domain en EE. UU. |
+| **Verificación** | Project Gutenberg, colección *Beasts and Super-Beasts*, ID 269: autor Saki, contenido incluye *The Open Window*, estado «Public domain in the USA». El ID 11639 citado antes corresponde a *Figures of Earth* de Cabell y no acredita este cuento. |
+| **Enlace** | https://www.gutenberg.org/ebooks/269 |
+| **Archivo en repo** | No aplica; no se distribuye contenido del libro. |
+| **sha256** | No aplica. |
+| **Cómo se genera** | Páginas pintadas con `scripts/libro-pagina.mjs` usando `chapasDeRejilla`, sin texto legible ni binarios. |
+
+**Nota:** Si en el futuro se incluyera una cubierta o interior escaneado, haría
+falta una segunda ficha para ese archivo concreto con su propia licencia y sha256.
+
+## Assets 2D (tokens) — #891
+
+Mismo formato de ficha que arriba, mismo candado. `tools/convertir-token.mjs`
+es el equivalente 2D de `tools/convertir-estatua.mjs`: reescala a 128×128 por
+vecino más próximo, cuantiza a color indexado y se niega a convertir cualquier
+`<nombre>` que no esté en su tabla `FICHAS`. A diferencia de una estatua, un
+token conserva **su propia paleta** — la frontera de arte de #351 gobierna las
+superficies procedurales del módulo, no una ilustración importada con su color
+ya decidido por su autor.
+
+Esta sección está vacía a propósito (#891-A/#891-B: el pipeline se entrega
+antes que el primer lote). Verificar la licencia de un pack concreto en su
+página exacta —no basta con que el issue diga "confirmado"— es el paso que
+convierte en real la primera fila de esta tabla; hasta entonces no hay ninguna
+ficha que documentar.
+
+| Pieza | Autoría | Licencia | Enlace | sha256 |
+|---|---|---|---|---|
+| _(ninguna todavía)_ | | | | |
+
+**Conversión (cuando llegue la primera ficha):**
+
+```
+node tools/convertir-token.mjs origen.png <id-declarado-en-FICHAS>
+```
+
+El PNG de origen **no entra en el repositorio**, igual que los STL de la
+sección anterior: se descarga aparte, se verifica su licencia y su sha256, y lo
+que se versiona es `foundry-module/data/tokens/<id>.mjs` — texto, revisable en
+un PR como cualquier otro cambio.

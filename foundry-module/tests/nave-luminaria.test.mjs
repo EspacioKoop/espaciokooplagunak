@@ -12,6 +12,7 @@ import {
   ANCHO, CAIDA, CAIDA_DIFUSOR, LARGO, PASO,
   piezasLuminarias, mallaDifusorLuminarias, colorDifusorLuminaria,
   reparto, focosLuminarias, tonoLuminaria,
+  piezasHazLuminarias, TOPE_LUMINARIAS_CON_HAZ,
 } from "../scripts/nave-luminaria.mjs";
 import { LUZ_CALIDA, MURAL, SECCION, ALERTA } from "../scripts/paleta.mjs";
 import { ALTURA, crearSalaCaja } from "../scripts/nave-sala-caja.mjs";
@@ -271,4 +272,43 @@ test("colorDifusorLuminaria: sin lectura de estado, comportamiento de siempre (l
   const estado = colorDifusorLuminaria();
   assert.equal(estado.color, LUZ_CALIDA);
   assert.equal(estado.emisivo, true);
+});
+
+test("el haz y el polvo nunca pasan de las luminarias más cercanas (#556)", () => {
+  // El reactor tiene de sobra más luminarias que el tope: pintarlas todas fue
+  // lo que costó un +41% medido. Aquí solo se comprueba el CONTRATO —nunca
+  // más piezas de las que corresponden al tope—, el coste real se mide con
+  // el motor completo, no aquí.
+  const sala = { ancho: 22, profundidad: 22, altura: 4.5 };
+  const focos = focosLuminarias(sala);
+  assert.ok(focos.length > TOPE_LUMINARIAS_CON_HAZ, "el reactor debería tener más luminarias que el tope, o la prueba no prueba nada");
+  const piezas = piezasHazLuminarias(sala, [11, 1.6, 11]);
+  // Tres capas de cono más cinco motas por luminaria, y ni una más.
+  const porLuminaria = 3 + 5;
+  assert.equal(piezas.length, TOPE_LUMINARIAS_CON_HAZ * porLuminaria);
+});
+
+test("el haz elige las luminarias más cercanas a la cámara, no las primeras del reparto", () => {
+  const sala = { ancho: 22, profundidad: 22, altura: 4.5 };
+  const desdeUnEsquina = piezasHazLuminarias(sala, [1, 1.6, 1], 1);
+  const desdeLaOtra = piezasHazLuminarias(sala, [21, 1.6, 21], 1);
+  // Los conos del haz llevan su ápice como primer vértice: comparar ese punto
+  // basta para saber que se ha elegido una luminaria distinta.
+  const apice = (piezas) => piezas[0].malla.vertices[0];
+  assert.notDeepEqual(apice(desdeUnEsquina), apice(desdeLaOtra));
+});
+
+test("el color del haz y de las motas llevan alfa: se leen como translúcidos", () => {
+  const piezas = piezasHazLuminarias({ ancho: 6, profundidad: 6, altura: 3 }, [3, 1.6, 3]);
+  for (const pieza of piezas) {
+    assert.match(pieza.color, /^rgba\(/, `${JSON.stringify(pieza)} no lleva alfa`);
+    assert.equal(pieza.emisivo, true, "el haz no se sombrea por normal");
+  }
+});
+
+test("las motas de una misma luminaria son siempre las mismas: deterministas, no Math.random", () => {
+  const sala = { ancho: 6, profundidad: 6, altura: 3 };
+  const uno = piezasHazLuminarias(sala, [3, 1.6, 3]);
+  const otro = piezasHazLuminarias(sala, [3, 1.6, 3]);
+  assert.deepEqual(uno, otro);
 });

@@ -100,5 +100,11 @@
     "title": "Puestos sin tripulación: degradado con aviso, sin automatización",
     "path": "0017-puestos-vacios-degradado-con-aviso.md",
     "status": "Aceptada"
+  },
+  {
+    "id": "ADR-0018",
+    "title": "Atlas cosmográfico: nodo mínimo y referencia débil a MapDocument",
+    "path": "0018-atlas-cosmografico-nodo-y-referencia-a-mapa.md",
+    "status": "Propuesta"
   }
 ]

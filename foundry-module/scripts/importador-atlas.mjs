@@ -1,6 +1,8 @@
 // Importador del atlas: detecta CSV de HYG o JSON de atlas ya hecho,
 // lo convierte cuando toca y lo devuelve VALIDADO por el validador cosmográfico.
 // Puro: ni Foundry, ni DOM, ni red. Entra texto, sale catálogo validado o error tipado.
+// Entrada standalone real: tools/importar-atlas.mjs lee stdin y devuelve el
+// catálogo completo con procedencia (docs/ATLAS_IMPORTACION_STANDALONE.md).
 //
 // Ya NO es cimiento: #816 (apilado sobre este cambio, ya fusionado en esta
 // rama) añadió el consumidor real que le faltaba — `atlas-importar-ventana.mjs`,

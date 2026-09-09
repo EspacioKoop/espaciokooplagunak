@@ -26,7 +26,9 @@ def declaration(module, status="declared-orphan", **overrides):
     entry = {
         "module": module,
         "status": status,
-        "reason": "Declaración de prueba con procedencia suficiente.",
+        # El motivo lleva el nombre del módulo porque ahora los motivos deben
+        # ser distintivos: uno que vale para dos módulos no explica ninguno.
+        "reason": f"Declaración de prueba con procedencia suficiente para {module}.",
         "declaredBy": "test",
         "declaredAt": "2026-08-24",
         "evidence": LOCAL_EVIDENCE,
@@ -498,6 +500,215 @@ class OrphanModuleInventoryTests(unittest.TestCase):
             )
             result = run(root, declarations_path, "--check")
             self.assertEqual(result.returncode, 0, result.stderr)
+
+
+
+class ProvenanceIsDistinctiveTest(unittest.TestCase):
+    """La procedencia no puede autocertificarse rellenando los campos.
+
+    La verificación de evidencia mira si el enlace RESUELVE, no si viene a
+    cuento, y por esa rendija se coló una entrega real el 27-ago-2026: 34
+    declaraciones de claves de idioma con un solo motivo —«Clave de idioma no
+    utilizada…», que es la definición de huérfana— y una sola evidencia para las
+    34, el issue #571, que es el de los ficheros de audio. Las 34 pasaban la
+    verificación de enlaces, porque el #571 existe.
+    """
+
+    def _validar(self, entradas):
+        inventory_checker._validate_provenance_is_distinctive(
+            {e["module"]: e for e in entradas}
+        )
+
+    def test_dos_modulos_no_pueden_compartir_motivo(self):
+        entradas = [declaration("a.mjs"), declaration("b.mjs", reason="Igual.")]
+        entradas[0]["reason"] = "Igual."
+        with self.assertRaises(ValueError) as ctx:
+            self._validar(entradas)
+        self.assertIn("motivo de declaración repetido", str(ctx.exception))
+        self.assertIn("a.mjs", str(ctx.exception))
+
+    def test_el_motivo_se_compara_sin_mayusculas_ni_espacios_de_sobra(self):
+        """Cambiar el envoltorio no convierte un motivo copiado en uno propio."""
+        entradas = [declaration("a.mjs"), declaration("b.mjs")]
+        entradas[0]["reason"] = "Cimiento sin consumidor."
+        entradas[1]["reason"] = "  CIMIENTO   sin\n consumidor.  "
+        with self.assertRaises(ValueError):
+            self._validar(entradas)
+
+    def test_motivos_distintos_pasan(self):
+        self._validar([declaration("a.mjs"), declaration("b.mjs")])
+
+    def test_una_evidencia_compartida_por_pocos_modulos_es_legitima(self):
+        """`npc-generador` y `npc-tablas` citan ambos el #676, y está bien:
+        son dos módulos de una misma función."""
+        entradas = [declaration(f"m{i}.mjs") for i in range(
+            inventory_checker.MAX_DECLARACIONES_POR_EVIDENCIA)]
+        self._validar(entradas)
+
+    def test_la_misma_evidencia_repetida_de_mas_se_rechaza(self):
+        entradas = [declaration(f"m{i}.mjs") for i in range(
+            inventory_checker.MAX_DECLARACIONES_POR_EVIDENCIA + 1)]
+        with self.assertRaises(ValueError) as ctx:
+            self._validar(entradas)
+        self.assertIn("enlace copiado", str(ctx.exception))
+
+    def test_el_caso_real_de_las_34_claves_se_rechaza(self):
+        entradas = [
+            declaration(f"m{i}.mjs",
+                        reason="Clave de idioma no utilizada en el código de scripts ni plantillas.")
+            for i in range(34)
+        ]
+        with self.assertRaises(ValueError):
+            self._validar(entradas)
+
+    def test_el_inventario_real_del_repositorio_pasa(self):
+        """La guarda no puede nacer rompiendo `main`."""
+        raiz = Path(__file__).parents[2]
+        datos = json.loads(
+            (raiz / "docs" / "orphan-declarations.json").read_text(encoding="utf-8"))
+        self._validar(datos["declarations"])
+
+
+class ModulosNuevosTest(unittest.TestCase):
+    """La guarda sobre el DELTA, que es lo que #701 deja fuera a propósito.
+
+    `unknown` no rompe CI y no debe romperlo: ante sintaxis que el lexer
+    reducido no puede demostrar, el inventario prefiere no saber. Pero eso
+    protege a lo que YA está en el árbol; un módulo que ESTRENA el PR y sale
+    `unknown` no tiene esa excusa, y sin esta comprobación entra callando.
+    """
+
+    RESULTADOS = [
+        {"module": "conectado.mjs", "status": "connected"},
+        {"module": "declarado.mjs", "status": "declared-orphan"},
+        {"module": "suelto.mjs", "status": "unknown"},
+        {"module": "arte.mjs", "status": "declared-orphan", "inventories": ["art"]},
+    ]
+
+    def _revisar(self, nuevos, fuentes=None, art=frozenset({"arte.mjs"})):
+        return inventory_checker.revisar_modulos_nuevos(
+            self.RESULTADOS, nuevos, fuentes or {}, set(art)
+        )
+
+    def test_un_modulo_nuevo_ya_conectado_no_molesta(self):
+        self.assertEqual(self._revisar(["conectado.mjs"]), [])
+
+    def test_un_modulo_nuevo_ya_declarado_no_molesta(self):
+        self.assertEqual(self._revisar(["declarado.mjs"]), [])
+
+    def test_un_modulo_nuevo_sin_consumidor_ni_declaracion_falla(self):
+        errores = self._revisar(["suelto.mjs"])
+        self.assertEqual(len(errores), 1)
+        self.assertIn("sin consumidor y sin declarar", errores[0])
+
+    def test_un_unknown_heredado_no_falla_si_no_es_nuevo(self):
+        """El caso que separa esta guarda de un `--check` más estricto."""
+        self.assertEqual(self._revisar([]), [])
+
+    def test_un_modulo_nuevo_con_color_propio_falla(self):
+        """El agujero real de #1029: `turno-orden-baraja.mjs` declaraba
+        `ventaja: "#ffff00"` con el comentario «no en paleta, lo definimos
+        aqui», y paleta.test.mjs no lo veía porque solo recorre artModules."""
+        errores = self._revisar(
+            ["declarado.mjs"],
+            fuentes={"declarado.mjs": 'export const C = {ventaja: "#ffff00"};'},
+        )
+        self.assertEqual(len(errores), 1)
+        self.assertIn("#ffff00", errores[0])
+
+    def test_un_modulo_de_arte_declarado_lo_vigila_paleta_y_no_esta_guarda(self):
+        self.assertEqual(
+            self._revisar(
+                ["arte.mjs"], fuentes={"arte.mjs": 'const c = "#ffff00";'}
+            ),
+            [],
+        )
+
+    def test_el_color_en_un_comentario_no_cuenta(self):
+        fuente = '// el crema es #f4e8c8\nexport const A = 1;\n'
+        self.assertEqual(
+            self._revisar(["declarado.mjs"], fuentes={"declarado.mjs": fuente}), []
+        )
+
+    def test_solo_cuentan_los_mjs_bajo_scripts_del_modulo(self):
+        rutas = [
+            "foundry-module/scripts/a.mjs",
+            "foundry-module/scripts/minijuegos/b.mjs",
+            "foundry-module/tests/a.test.mjs",
+            "tools/scene-engine/authority.mjs",
+            "docs/algo.md",
+            "",
+        ]
+        self.assertEqual(
+            inventory_checker.modulos_nuevos(rutas, Path("foundry-module")),
+            ["a.mjs", "minijuegos/b.mjs"],
+        )
+
+
+class PropuestaTest(unittest.TestCase):
+    """La propuesta automática rellena lo mecánico y NO el motivo.
+
+    Inventarlo sería generar exactamente el relleno de #822 —34 declaraciones
+    con un motivo que era la definición de huérfana— pero más rápido.
+    """
+
+    def test_la_propuesta_marca_lo_que_no_puede_saber(self):
+        propuesta = inventory_checker.proponer_declaracion(
+            "nuevo.mjs", inventory_checker.date(2026, 9, 9)
+        )
+        self.assertEqual(propuesta["module"], "nuevo.mjs")
+        self.assertEqual(propuesta["status"], "declared-orphan")
+        self.assertEqual(propuesta["declaredAt"], "2026-09-09")
+        for campo in (propuesta["reason"], propuesta["declaredBy"],
+                      propuesta["evidence"]["url"]):
+            self.assertIn(inventory_checker.MARCADOR_PENDIENTE, campo)
+
+    def test_una_propuesta_sin_rellenar_no_pasa_la_validacion(self):
+        """Lo que impide que `--escribir` se convierta en un sello de goma."""
+        propuesta = inventory_checker.proponer_declaracion(
+            "nuevo.mjs", inventory_checker.date(2026, 9, 9)
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            ruta = Path(tmp) / "decl.json"
+            ruta.write_text(
+                json.dumps({
+                    "schemaVersion": 1,
+                    "declarations": [propuesta],
+                    "artModules": [],
+                }),
+                encoding="utf-8",
+            )
+            with self.assertRaises(ValueError) as ctx:
+                inventory_checker.load_declarations(ruta, Path(tmp))
+        self.assertIn("sin rellenar", str(ctx.exception))
+
+    def test_escribir_no_duplica_una_declaracion_existente(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ruta = Path(tmp) / "decl.json"
+            ruta.write_text(
+                json.dumps({
+                    "schemaVersion": 1,
+                    "declarations": [declaration("ya.mjs")],
+                    "artModules": [],
+                }),
+                encoding="utf-8",
+            )
+            inventory_checker.escribir_propuestas(
+                ruta,
+                [
+                    inventory_checker.proponer_declaracion(
+                        "ya.mjs", inventory_checker.date(2026, 9, 9)
+                    ),
+                    inventory_checker.proponer_declaracion(
+                        "otro.mjs", inventory_checker.date(2026, 9, 9)
+                    ),
+                ],
+            )
+            datos = json.loads(ruta.read_text(encoding="utf-8"))
+        self.assertEqual(
+            [entry["module"] for entry in datos["declarations"]],
+            ["ya.mjs", "otro.mjs"],
+        )
 
 
 if __name__ == "__main__":

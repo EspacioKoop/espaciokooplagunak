@@ -1,0 +1,112 @@
+{
+  "fixture": "production cantina geometry + original ship atlas; sample placements only",
+  "logicalSize": [
+    320,
+    180
+  ],
+  "samples": [
+    {
+      "name": "entrance",
+      "yaw": 0,
+      "advance": -0.4,
+      "software": {
+        "cpuMedianMs": 7.300000011920929,
+        "cpuP95Ms": 11.399999976158142,
+        "cpuMaxMs": 12.300000011920929,
+        "cpuMs": 7.699999988079071,
+        "composeMs": 4,
+        "polygons": 585,
+        "gpuMs": null
+      },
+      "gpu": {
+        "cpuMedianMs": 1,
+        "cpuP95Ms": 3.100000023841858,
+        "cpuMaxMs": 7.599999964237213,
+        "cpuMs": 1.5,
+        "gpuMs": 8.51602,
+        "drawCalls": 113,
+        "triangles": 1286,
+        "geometries": 113,
+        "textures": 2
+      }
+    },
+    {
+      "name": "bar",
+      "yaw": -25,
+      "advance": 2,
+      "software": {
+        "cpuMedianMs": 7.300000011920929,
+        "cpuP95Ms": 9.699999988079071,
+        "cpuMaxMs": 11,
+        "cpuMs": 6.900000035762787,
+        "composeMs": 2.600000023841858,
+        "polygons": 407,
+        "gpuMs": null
+      },
+      "gpu": {
+        "cpuMedianMs": 1.2000000476837158,
+        "cpuP95Ms": 3.100000023841858,
+        "cpuMaxMs": 3.699999988079071,
+        "cpuMs": 1.5,
+        "gpuMs": 4.540036,
+        "drawCalls": 77,
+        "triangles": 854,
+        "geometries": 113,
+        "textures": 2
+      }
+    },
+    {
+      "name": "side",
+      "yaw": 35,
+      "advance": 1,
+      "software": {
+        "cpuMedianMs": 6.900000035762787,
+        "cpuP95Ms": 11.399999976158142,
+        "cpuMaxMs": 16.80000001192093,
+        "cpuMs": 6.199999988079071,
+        "composeMs": 2,
+        "polygons": 353,
+        "gpuMs": null
+      },
+      "gpu": {
+        "cpuMedianMs": 0.8999999761581421,
+        "cpuP95Ms": 3,
+        "cpuMaxMs": 3.700000047683716,
+        "cpuMs": 3.700000047683716,
+        "gpuMs": 3.871212,
+        "drawCalls": 69,
+        "triangles": 758,
+        "geometries": 118,
+        "textures": 2
+      }
+    }
+  ],
+  "checks": [
+    "compact integer-or-crop",
+    "close -> reopen",
+    "WebGL context lost -> restored -> identical image",
+    "SoftwareBackend: pose overrides rendered without scene mutation",
+    "SoftwareBackend: nearest surface, reversed order, near/far clipping, camera",
+    "GPUBackend: pose overrides rendered without scene mutation",
+    "GPUBackend: nearest surface, reversed order, near/far clipping, camera",
+    "SoftwareBackend: intersecting planes change nearest surface across image",
+    "GPUBackend: intersecting planes change nearest surface across image",
+    "screen atlas: exact GPU/software RGBA parity",
+    "SoftwareBackend: world sprite depth and alpha holes",
+    "GPUBackend: world sprite depth and alpha holes",
+    "no browser errors",
+    "WebGL unavailable: software consumer remains runnable"
+  ],
+  "browser": "145.0.7632.6",
+  "cold": {
+    "software": {
+      "initializationMs": 169.10000002384186,
+      "firstRenderCpuMs": 556.8000000119209
+    },
+    "gpu": {
+      "initializationMs": 5980.600000023842,
+      "firstRenderCpuMs": 2679.7000000476837
+    }
+  },
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+}

@@ -49,6 +49,13 @@ import { registerStationOrders } from "./station-order-wiring.mjs";
 import { registrarRelevoPuestos } from "./station-handover.mjs";
 import { registrarAsistencia } from "./asistencia-wiring.mjs";
 import { addAsistenciaControl, registrarAsistenciaUI } from "./asistencia-ui.mjs";
+import { crearClaseConvocatoriaV1, crearClaseConvocatoriaV2 } from "./convocatoria-app.mjs";
+import { addConvocarControl, registrarConvocatoriaUI } from "./convocatoria-wiring.mjs";
+import {
+  publicarConvocatoria,
+  registrarAjusteConvocatoria,
+  registrarEscuchaConvocatoria,
+} from "./convocatoria-escena.mjs";
 import {
   registrarParlamentoUI,
   addParlamentoControl,
@@ -77,15 +84,10 @@ import { crearClaseCantinaV1, crearClaseCantinaV2 } from "./cantina-app.mjs";
 import { puertaPorId } from "./cantina.mjs";
 import { crearClasePanelGMV1, crearClasePanelGMV2 } from "./panel-gm-app.mjs";
 import { construirHerramientasGM } from "./herramientas-gm-catalogo.mjs";
-import {
-  publicarConvocatoria,
-  registrarAjusteConvocatoria,
-  registrarEscuchaConvocatoria,
-} from "./convocatoria-escena.mjs";
-import { crearClaseConvocatoriaV1, crearClaseConvocatoriaV2 } from "./convocatoria-app.mjs";
-import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave-app.mjs";
+import { crearClaseSeccionV1, crearClaseSeccionV2 } from "./seccion-nave/seccion-nave-app.mjs";
+import { construirHerramientasPublicas } from "./herramientas-publicas-catalogo.mjs";
 import { crearClaseAndarV1, crearClaseAndarV2 } from "./andar-nave-app.mjs";
-import { salaDePuesto } from "./seccion-nave.mjs";
+import { salaDePuesto } from "./seccion-nave/seccion-nave.mjs";
 import { registrarPreset as registrarPresetBaraja } from "./minijuegos/baraja-preset.mjs";
 import {
   crearClaseMesaDadosV1,
@@ -145,6 +147,9 @@ registrarContenidoExterno(MODULE_ID);
 // v11) o V2 (ApplicationV2, v12+) según lo que ofrezca el anfitrión — las
 // antiguas ventanas sueltas de estado de nave y mapa vivo ya no existen.
 let consolaApp = null;
+let convocatoriaApp = null;
+
+const AJUSTE_IDIOMA = "idioma";
 
 Hooks.once("init", () => {
   // La baraja de la nave, disponible como preset de cartas de Foundry (#340).
@@ -213,11 +218,9 @@ Hooks.once("init", () => {
   // de arriba —ver cabecera de `alarma-cruzada.mjs`—, ajuste de MUNDO por el
   // mismo motivo: solo el GM calcula, todos leen.
   registrarAjusteAlarmaCruzada(MODULE_ID);
-
-  // Convocatoria vigente (#832). Ajuste de MUNDO por un motivo distinto del de
-  // arriba: aquí no es que solo el GM tenga el dato, es que solo él puede
-  // ESCRIBIRLO — Foundry rechaza la escritura a los demás, y eso es lo que hace
-  // que una convocatoria no se pueda falsificar desde un cliente cualquiera.
+  // La convocatoria viaja por ajuste de mundo y no por socket (#832): el
+  // socket no acredita a quien emite, y un ajuste de mundo solo lo escribe el
+  // GM porque Foundry rechaza la escritura al resto.
   registrarAjusteConvocatoria(MODULE_ID);
 
   // Tinte de escena delegado en FXMaster (ver `filtros-escena.mjs` y
@@ -356,7 +359,6 @@ Hooks.once("init", () => {
   registrarAjusteMusica(MODULE_ID);
 });
 
-const AJUSTE_IDIOMA = "idioma";
 
 /* Aplica el idioma elegido a los textos del módulo, y solo a ellos.
  *
@@ -423,13 +425,6 @@ Hooks.once("ready", () => {
   // tiene que encontrar su color ya publicado.
   aplicarVariablesAlerta();
   registrarEscuchaAlerta(MODULE_ID);
-  // Convocatoria a una estancia suelta (#832): la escucha la registran TODOS,
-  // porque a quien se convoca es a la tripulación. Solo se atiende la llamada
-  // que llega estando conectado; el ajuste no se aplica al cargar, y eso es
-  // deliberado (ver la cabecera de `convocatoria-escena.mjs`).
-  registrarEscuchaConvocatoria(MODULE_ID, {
-    alConvocar: ({ estancia }) => abrirAndarNave(estancia),
-  });
   // Alarma cruzada reactor/escudos (#482): solo ingeniería y armas la ven, con
   // la variante causa/efecto que les toca. El puesto se resuelve del flag del
   // propio usuario en cada repintado, para seguir el relevo sin recargar.
@@ -475,6 +470,17 @@ Hooks.once("ready", () => {
   // El emisor real de la tirada: al pedir un enfoque, lee la ficha del hablante
   // y tira el d20; la ventana cierra en banda. Sin Foundry no se registra.
   registrarParlamentoTirada();
+  // Convocar a una estancia desde la barra (#832): primer consumidor real de
+  // `convocatoria-estancia.mjs`, que hasta ahora era una conexión muerta.
+  registrarConvocatoriaUI(MODULE_ID);
+  // ...y la difusión a la mesa, que es lo que le faltaba: hasta aquí convocar
+  // solo abría la estancia en el cliente del propio GM. NO se aplica el ajuste
+  // vigente al conectarse, al revés que la alerta: una alerta es un estado
+  // sostenido y una convocatoria es un momento, así que aplicarla al cargar
+  // arrastraría a la playa a quien entra dos horas después.
+  registrarEscuchaConvocatoria(MODULE_ID, {
+    alConvocar: (destino) => abrirAndarNave(destino.estancia),
+  });
   // Sesiones de minijuegos (#308): el GM coordinador recoge las propuestas por
   // updateUser; cualquier cliente escucha las vistas privadas dirigidas a él.
   registrarSesionesMinijuegos(MODULE_ID);
@@ -667,27 +673,6 @@ function abrirPanelGM() {
   const Clase = foundry.applications?.api?.ApplicationV2
     ? crearClasePanelGMV2({ alSeleccionar: (id) => ACCIONES_PANEL_GM[id]?.() })
     : crearClasePanelGMV1({ alSeleccionar: (id) => ACCIONES_PANEL_GM[id]?.() });
-  const app = new Clase();
-  if (foundry.applications?.api?.ApplicationV2) app.render({ force: true });
-  else app.render(true);
-}
-
-/* Convocatoria (#832): el GM elige la estancia y la mesa entera va a ella.
- *
- * Aquí solo está la puerta. Quién puede convocar y dónde se aterriza lo decide
- * `convocar` (puro, #587), a dónde se puede convocar lo deriva del catálogo
- * `destinosConvocables`, y el viaje del aviso a los demás clientes es el ajuste
- * de mundo de `convocatoria-escena.mjs`.
- *
- * El GM también se va con ellos: la escucha está registrada en todos los
- * clientes, el suyo incluido. Convocar a la playa y quedarse en el puente sería
- * la única forma de convocar a un sitio sin verlo. */
-function abrirConvocatoria() {
-  if (!game.user?.isGM) return;
-  const alElegir = (estancia) => void publicarConvocatoria({ moduleId: MODULE_ID, idEstancia: estancia });
-  const Clase = foundry.applications?.api?.ApplicationV2
-    ? crearClaseConvocatoriaV2({ alElegir })
-    : crearClaseConvocatoriaV1({ alElegir });
   const app = new Clase();
   if (foundry.applications?.api?.ApplicationV2) app.render({ force: true });
   else app.render(true);
@@ -927,52 +912,12 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // botón lo ven todos, a diferencia del mando, que es solo del GM.
   const tools = [
     ...gmTools,
-    {
-      // La cantina la ve todo el mundo: es la capa social, y un minijuego al
-      // que solo pudiera entrar el GM no sería un minijuego (#423). Sustituye
-      // al botón de mesa suelto por una única puerta; de ahí para dentro
-      // decide el catálogo de `cantina.mjs`, no un botón nuevo por mesa. El GM
-      // sigue siendo quien CREA la mesa elegida si no hay ninguna abierta; a
-      // un jugador la puerta le lleva a la mesa puesta, o al aviso de que
-      // todavía no hay ninguna.
-      name: "lagunak-cantina",
-      title: "LAGUNAK.Controles.AbrirCantina",
-      icon: "fa-solid fa-mug-saucer",
-      button: true,
-      // Los dos verticales entran por AQUÍ. #413 nació con su propio botón de
-      // escena porque entonces la alternativa era un menú dentro de la mesa de
-      // póker, que habría hecho de los dados un modo del otro juego. La cantina
-      // resuelve lo mismo sin gastar barra: elegir a qué se juega sigue siendo
-      // lo primero que se decide, solo que en una sala y no en un control.
-      onClick: () => abrirCantina(),
-    },
-    {
-      // La sección la ve toda la mesa por la misma razón que la cantina: saber
-      // qué forma tiene la nave en la que vives no es información privilegiada
-      // (#427). La lectura de daño sí lo es, y por eso a quien no tiene puente
-      // el plano le sale sin lectura en vez de mentirle.
-      name: "lagunak-seccion",
-      title: "LAGUNAK.Controles.AbrirSeccion",
-      icon: "fa-solid fa-diagram-project",
-      button: true,
-      onClick: () => abrirSeccionNave(),
-    },
-    {
-      // Prototipo técnico de #427, visible a toda la mesa: no toca autoridad
-      // ni datos privados, es un banco de pruebas del motor de movimiento.
-      name: "lagunak-andar-nave",
-      title: "LAGUNAK.Controles.AbrirAndarNave",
-      icon: "fa-solid fa-person-walking",
-      button: true,
-      onClick: () => abrirAndarNave(),
-    },
-    {
-      name: "lagunak-musica-audio",
-      title: "LAGUNAK.Controles.AudioMusica",
-      icon: "fa-solid fa-headphones",
-      button: true,
-      onClick: () => alternarAudioLocal(),
-    },
+    ...construirHerramientasPublicas({
+      abrirCantina,
+      abrirSeccionNave,
+      abrirAndarNave,
+      alternarAudioLocal,
+    }),
   ];
 
   crearGrupo(controls, {
@@ -995,6 +940,8 @@ Hooks.on("getSceneControlButtons", (controls) => {
   // Parlamento de comunicaciones (#810): primer consumidor real de
   // npc-generador (#676). Botón en el grupo propio, como las demás ventanas.
   addParlamentoControl(controls);
+  // Convocar a una estancia (#832): solo-GM por la lógica de `convocar`.
+  addConvocarControl(controls);
 });
 
 /* Diagnóstico de conexión (issue #183): comprueba /healthz y después
@@ -1095,3 +1042,39 @@ function abrirConsolaCaliente() {
   if (esV2) consolaApp.render({ force: true });
   else consolaApp.render(true);
 }
+
+/** Abre la ventana de convocatoria de estancia. Solo GM. */
+function abrirConvocatoria() {
+  if (!game.user?.isGM) return;
+  const esV2 = Boolean(foundry.applications?.api?.ApplicationV2);
+  if (!convocatoriaApp || convocatoriaApp.bridgeAccessRevoked) {
+    convocatoriaApp = new (esV2 ? crearClaseConvocatoriaV2({ onSubmit: manejarConvocatoria }) : crearClaseConvocatoriaV1({ onSubmit: manejarConvocatoria }))();
+  }
+  if (esV2) convocatoriaApp.render({ force: true });
+  else convocatoriaApp.render(true);
+}
+
+/** Maneja el envío del formulario de convocatoria. */
+function manejarConvocatoria({ idEstancia, rolConvocante }) {
+  // `publicarConvocatoria` llama a `convocar` por dentro con el mismo rol, así
+  // que la guarda de #237 sigue siendo la única y no se duplica aquí. Devuelve
+  // null exactamente cuando `convocar` lo devolvía: no es GM, la estancia no
+  // existe, o su entrada está bloqueada.
+  return publicarConvocatoria({ moduleId: MODULE_ID, idEstancia, rol: rolConvocante })
+    .then((publicado) => {
+      if (!publicado) {
+        ui.notifications?.warn(game.i18n.localize("LAGUNAK.PanelGM.Convocatoria.Error"));
+      }
+      return publicado;
+    })
+    .catch((err) => {
+      // Un fallo al ESCRIBIR el ajuste tiene que avisar: si se descarta, la
+      // ventana se cierra como si la tripulación hubiera sido convocada y
+      // nadie se mueve.
+      console.error("No se pudo publicar la convocatoria:", err);
+      ui.notifications?.warn(game.i18n.localize("LAGUNAK.PanelGM.Convocatoria.Error"));
+      return null;
+    });
+}
+
+export { abrirConvocatoria, manejarConvocatoria };

@@ -15,17 +15,27 @@
  * sus propios muebles: colocar, proyectar, devolver polígonos para que la
  * sala los funda con los suyos y reordene junto con el resto.
  *
- * Simplificación deliberada, documentada y no escondida: el cuerpo NO gira
- * con el yaw propio de cada jugador (mismo límite que ya tienen los
- * avatares sentados de la cantina, que tampoco rotan). Girar el cuerpo
- * exigiría rotar la malla entera por vértice antes de proyectarla, no solo
- * mover dónde se coloca — encaja mejor en un PR de pulido visual aparte una
- * vez que la posición en sí ya esté verificada en vivo.
+ * ALTURA: ver el reparto de `y` en el cuerpo de la función. Es la frontera
+ * donde el offset de cámara deja de ser cámara y pasa a ser cuerpo, y estaba
+ * mal desde el principio — lo hizo visible sentarse, pero agacharse ya hundía
+ * a la gente en el suelo.
+ *
+ * EL CUERPO SÍ GIRA con el rumbo de cada jugador (#897). Durante mucho tiempo
+ * no lo hacía, y la explicación era que «girar exigiría rotar la malla entera
+ * por vértice antes de proyectarla»: cierto, y resultó costar ocho vértices y
+ * dos multiplicaciones por caja (`cajaGirada`, en `escena-primitivas.mjs`).
+ * Lo que faltaba de verdad era dónde ponerlo.
+ *
+ * El dato NO es nuevo: `yaw` viaja en la muestra de red desde #453 y
+ * `nave-movimiento-red.mjs` lo interpola con cuidado de ángulos. Llegaba hasta
+ * aquí dentro de cada jugador y se descartaba en la última línea. Los avatares
+ * sentados de la cantina siguen sin girar, y ahí sigue estando bien: están
+ * colocados de cara a la barra a propósito (ver `SITIOS`).
  *
  * Puro: ni Foundry, ni DOM, ni red, ni reloj.
  */
 
-import { caja } from "./cantina-escena.mjs";
+import { mallaDePieza } from "./escena-primitivas.mjs";
 import { piezasAvatar } from "./cantina-avatar.mjs";
 import { componerEscena } from "./retro3d.mjs";
 
@@ -33,7 +43,7 @@ import { componerEscena } from "./retro3d.mjs";
  * Polígonos de los avatares de otros jugadores, en el mismo espacio de
  * cámara que ya usa la sala que llama.
  *
- * @param {Array<{x:number, y:number, z:number, avatar?:object}>} jugadores
+ * @param {Array<{x:number, y:number, z:number, yaw?:number, avatar?:object}>} jugadores
  *   Posiciones YA en espacio nativo de la sala (la sala es quien traduce, si
  *   su espacio nativo no coincide con el de la planta — ver `cantina-
  *   andar.mjs` y `aNativo`). `avatar` es la descripción que ya consume
@@ -54,16 +64,31 @@ export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, e
   if (!Array.isArray(jugadores) || jugadores.length === 0) return [];
   const [camX, camY, camZ] = camara;
 
-  const piezas = jugadores.flatMap((jugador, indice) =>
-    piezasAvatar(jugador?.avatar ?? {}, {
-      pies: [jugador.x - camX, jugador.y - camY, jugador.z - camZ],
+  const piezas = jugadores.flatMap((jugador, indice) => {
+    // `y` es el offset de CÁMARA, no la altura de los pies (`nave-movimiento.mover`:
+    // 0 de pie, >0 saltando, <0 agachado o sentado). Tratarlo como altura de los
+    // pies —que es lo que se hacía— hunde en el suelo a quien se agacha, y con
+    // los asientos hunde también a quien se sienta: se veía un cuerpo entero de
+    // pie, con los tobillos por debajo de la tarima.
+    //
+    // Las dos mitades del offset no son la misma cosa y por eso se separan
+    // aquí, que es la frontera donde el dato deja de ser cámara y pasa a ser
+    // cuerpo: hacia ARRIBA despegas del suelo y el cuerpo entero sube; hacia
+    // ABAJO los pies siguen puestos y lo que se encoge es la persona.
+    const y = Number.isFinite(jugador.y) ? jugador.y : 0;
+    return piezasAvatar(jugador?.avatar ?? {}, {
+      pies: [jugador.x - camX, Math.max(0, y) - camY, jugador.z - camZ],
+      flexion: Math.max(0, -y),
       indice,
-    }),
-  );
+      // Mismo convenio que `moverXZ`: 0 mira a +z. Sin rumbo declarado se queda
+      // en 0, que es exactamente lo que se dibujaba antes.
+      yaw: Number.isFinite(jugador?.yaw) ? jugador.yaw : 0,
+    });
+  });
 
   return piezas
     .map((pieza) =>
-      componerEscena(caja(pieza.centro, pieza.medidas), {
+      componerEscena(mallaDePieza(pieza, { giro: pieza.giro }), {
         ancho,
         alto,
         epoca,
@@ -81,3 +106,4 @@ export function poligonosOtrosJugadores(jugadores, { camara, yaw, ancho, alto, e
     )
     .flatMap((parte) => parte.poligonos);
 }
+

@@ -1,13 +1,11 @@
-<div class="lagunak-panel-gm-cuerpo">
-  <p class="lagunak-panel-gm-intro">{{localize "LAGUNAK.Convocatoria.Intro"}}</p>
-  <ul class="lagunak-panel-gm-lista" aria-label="{{localize "LAGUNAK.Convocatoria.Destinos"}}">
-    {{#each destinos}}
-      <li class="lagunak-panel-gm-fila">
-        <button type="button" class="lagunak-panel-gm-entrada" data-destino="{{this.id}}">
-          <i class="fa-solid fa-bullhorn" aria-hidden="true"></i>
-          <span>{{this.titulo}}</span>
-        </button>
+<section class="lagunak-convocar__panel">
+  <h2>{{localize "LAGUNAK.Convocatoria.Titulo"}}</h2>
+  <p class="lagunak-convocar__ayuda">{{localize "LAGUNAK.Convocatoria.Elige"}}</p>
+  <ul class="lagunak-convocar__lista">
+    {{#each estancias}}
+      <li>
+        <button type="button" data-convocar="{{this.id}}">{{this.nombre}}</button>
       </li>
     {{/each}}
   </ul>
-</div>
+</section>

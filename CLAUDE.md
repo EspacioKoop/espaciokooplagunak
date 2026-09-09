@@ -265,9 +265,22 @@ No añadas al repositorio `options.ini`, `keybindings.json`, logs ni directorios
     vale igual para las dos consolas, así que fundir varias piezas en una escena se hace con
     `fundirEscenas(...)` y no con el `flatMap` + `sort` que ocho consumidores copiaban. Ese orden
     es hoy por centroide de cara y es la deuda viva de #510 —empata entre caras que se tocan, que
-    es el parpadeo que ve QA—; lo ya intentado y descartado (epsilon con orden estable; Newell sin
-    partir caras, que empeora la medida) está escrito en la cabecera de `retro3d.mjs` para no
-    repetirlo por cuarta vez. Para ver lo que este motor dibuja de VERDAD —no una maqueta con su
+    es el parpadeo que ve QA—; los TRES intentos ya hechos y descartados están escritos en la
+    cabecera de `retro3d.mjs` para no repetirlos por cuarta vez: epsilon con orden estable
+    (cambia un parpadeo que acierta a ratos por un orden fijo que puede estar mal siempre);
+    Newell SIN partir caras, que empeora la medida (1575 pares mal ordenados con centroide,
+    6579 con él); y Newell CON partición (#900), que sí está **implementado y probado**
+    —`ordenarPorPintorNewell` y `retro3d-newell.test.mjs`— pero deliberadamente DESCONECTADO de
+    `componerEscena`/`fundirEscenas`, porque sobre el barrido completo de yaw introduce pares mal
+    ordenados nuevos que el centroide no tenía. La causa está identificada y es la misma familia
+    que la del segundo intento un peldaño más abajo: un candidato ya resuelto no se vuelve a
+    comprobar, así que un corte posterior puede invalidar una decisión ya cerrada, y cerrar ese
+    hueco exige revalidar contra todo lo ya resuelto —el coste que el intento 2 había decidido no
+    pagar—. La regresión está fijada como fixture end-to-end en `retro3d-fundir.test.mjs`: mientras
+    ese hueco siga abierto, la prueba EXIGE que al menos un ángulo siga regresionando, y el día que
+    no regresione en ninguno es ella misma la que señala que ya se puede cablear a producción. O
+    sea que el código de Newell en el árbol no es deuda muerta ni una implementación a medias: es
+    la primitiva reutilizable, y la condición para conectarla está escrita como prueba. Para ver lo que este motor dibuja de VERDAD —no una maqueta con su
     propia proyección— está el banco de pruebas de `tools/banco-3d/` (#976): `index.html`/`app.mjs`
     importan `retro3d.mjs`/`retro3d-lienzo.mjs` por ESM y pintan en un `<canvas>` real con controles
     de malla, época, giro de cámara y fase de marcha; `capturar.mjs` sirve esa página con

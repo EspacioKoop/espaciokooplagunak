@@ -8,7 +8,7 @@
 #
 # Etapa de construcción: aquí sí hay pip, y ni él, ni setuptools, ni sus
 # dependencias vendorizadas (msgpack) llegan a la imagen final.
-FROM python:3.14-alpine AS build
+FROM python:3.15-alpine AS build
 
 COPY requirements.txt .
 RUN python -m venv /opt/venv \
@@ -16,7 +16,7 @@ RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install --no-cache-dir --only-binary=:all: -r requirements.txt \
     && /opt/venv/bin/pip uninstall -y pip setuptools
 
-FROM python:3.14-alpine
+FROM python:3.15-alpine
 
 # Parches de seguridad del sistema base, y fuera el gestor de paquetes de
 # Python: la imagen de ejecución no instala nada, así que pip/setuptools solo
